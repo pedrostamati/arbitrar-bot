@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0c12">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>ArbitrAR</title>
+<style>
+:root{
+  --bg:#0a0c12;--s1:#111420;--s2:#181c2e;--s3:#1e2338;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.13);
+  --text:#e8eaf2;--muted:#5a607a;--muted2:#8890aa;
+  --green:#00e676;--gbg:rgba(0,230,118,0.08);--gborder:rgba(0,230,118,0.22);
+  --red:#ff5252;--rbg:rgba(255,82,82,0.08);--rborder:rgba(255,82,82,0.22);
+  --yellow:#ffd740;--ybg:rgba(255,215,64,0.08);--yborder:rgba(255,215,64,0.22);
+  --blue:#448aff;--bbg:rgba(68,138,255,0.08);--bborder:rgba(68,138,255,0.22);
+  --purple:#b388ff;--pbg:rgba(179,136,255,0.08);--pborder:rgba(179,136,255,0.22);
+  --orange:#ff9100;--obg:rgba(255,145,0,0.08);--oborder:rgba(255,145,0,0.22);
+  --r:14px;--rsm:8px;--mono:'SF Mono','Fira Code',monospace;
+  --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI',sans-serif;font-size:14px}
+body{min-height:100dvh;padding-top:var(--st);padding-bottom:calc(var(--sb)+62px)}
+.hdr{position:sticky;top:var(--st);z-index:100;background:rgba(10,12,18,.94);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.logo{display:flex;align-items:center;gap:8px}
+.logo-ic{width:30px;height:30px;background:linear-gradient(135deg,#448aff,#b388ff);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0}
+.logo-name{font-size:16px;font-weight:700;letter-spacing:-.5px}
+.logo-sub{font-size:10px;color:var(--muted2);line-height:1}
+.hdr-r{display:flex;align-items:center;gap:6px}
+.ldot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);flex-shrink:0}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:.3}}
+.ldot.on{animation:bl 1.5s infinite}
+.hbtn{background:var(--s2);border:1px solid var(--border2);color:var(--text);border-radius:8px;padding:6px 11px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap}
+.hbtn.pause{background:var(--rbg);border-color:var(--rborder);color:var(--red)}
+.cdbadge{font-size:10px;color:var(--muted2);font-family:var(--mono);min-width:22px;text-align:center}
+.page{padding:12px 12px 0}
+.cfg{display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.cfg::-webkit-scrollbar{display:none}
+.cpill{background:var(--s1);border:1px solid var(--border2);border-radius:24px;padding:6px 13px;display:flex;align-items:center;gap:6px;white-space:nowrap;flex-shrink:0}
+.cpill label{font-size:10px;color:var(--muted2)}
+.cpill input,.cpill select{background:transparent;border:none;color:var(--text);font-size:13px;font-weight:700;font-family:var(--mono);outline:none;cursor:pointer}
+.fxs{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;scrollbar-width:none}
+.fxs::-webkit-scrollbar{display:none}
+.fxc{background:var(--s1);border:1px solid var(--border);border-radius:20px;padding:5px 11px;white-space:nowrap;flex-shrink:0}
+.fxc .fl{font-size:9px;color:var(--muted2);display:block;line-height:1;margin-bottom:2px}
+.fxc .fv{font-size:12px;font-weight:700;font-family:var(--mono)}
+.krow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.kpi{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:12px 13px}
+.kl{font-size:10px;color:var(--muted2);margin-bottom:4px}
+.kv{font-size:20px;font-weight:800;font-family:var(--mono);letter-spacing:-.5px;line-height:1}
+.ks{font-size:10px;color:var(--muted);margin-top:3px}
+.kpi.g .kv{color:var(--green)}.kpi.r .kv{color:var(--red)}.kpi.b .kv{color:var(--blue)}.kpi.y .kv{color:var(--yellow)}
+.sh{font-size:10px;font-weight:700;color:var(--muted2);letter-spacing:1px;text-transform:uppercase;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+.sh::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* TYPE TABS — para filtrar tipo de arbitraje */
+.ttabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px;scrollbar-width:none}
+.ttabs::-webkit-scrollbar{display:none}
+.ttab{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;border:1px solid var(--border2);background:var(--s1);color:var(--muted2);transition:all .15s}
+.ttab.act{background:var(--bbg);border-color:var(--bborder);color:var(--blue)}
+.ttab.cat-usdt.act{background:var(--gbg);border-color:var(--gborder);color:var(--green)}
+.ttab.cat-stable.act{background:var(--pbg);border-color:var(--pborder);color:var(--purple)}
+.ttab.cat-btc.act{background:var(--ybg);border-color:var(--yborder);color:var(--yellow)}
+.ttab.cat-tri.act{background:var(--obg);border-color:var(--oborder);color:var(--orange)}
+
+/* OPP CARDS */
+.oppl{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.oppc{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;transition:border-color .2s}
+.oppc.profit{border-color:var(--gborder);background:linear-gradient(135deg,var(--s1),rgba(0,230,118,.04))}
+.oppc.near{border-color:var(--yborder)}
+.oppt{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;gap:8px}
+.oppr{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.opptitle{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.oppex{font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;background:var(--s2);border:1px solid var(--border2);white-space:nowrap}
+.opparr{font-size:11px;color:var(--muted2)}
+.opptype{font-size:9px;padding:2px 7px;border-radius:10px;font-weight:700;white-space:nowrap;align-self:flex-start}
+.opptype.usdt{background:var(--gbg);border:1px solid var(--gborder);color:var(--green)}
+.opptype.stable{background:var(--pbg);border:1px solid var(--pborder);color:var(--purple)}
+.opptype.btc{background:var(--ybg);border:1px solid var(--yborder);color:var(--yellow)}
+.opptype.tri{background:var(--obg);border:1px solid var(--oborder);color:var(--orange)}
+.opptype.ccl{background:var(--bbg);border:1px solid var(--bborder);color:var(--blue)}
+.opppnl{font-size:18px;font-weight:800;font-family:var(--mono);letter-spacing:-.5px;flex-shrink:0}
+.opppnl.pos{color:var(--green)}.opppnl.neg{color:var(--red)}.opppnl.near{color:var(--yellow)}
+.oppdet{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:10px}
+.opdd{background:var(--s2);border-radius:var(--rsm);padding:6px 7px;text-align:center}
+.oddl{font-size:9px;color:var(--muted2);margin-bottom:2px}
+.oddv{font-size:11px;font-weight:700;font-family:var(--mono)}
+.oddv.pos{color:var(--green)}.oddv.neg{color:var(--red)}
+.oppacts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.opabt{border-radius:var(--rsm);padding:9px 4px;text-align:center;font-size:10px;font-weight:800;text-decoration:none;display:block;cursor:pointer;transition:transform .12s;line-height:1.3}
+.opabt:active{transform:scale(.96)}
+.opabt.buy{background:var(--gbg);border:1px solid var(--gborder);color:var(--green)}
+.opabt.sell{background:var(--rbg);border:1px solid var(--rborder);color:var(--red)}
+.opabt.sig{background:var(--bbg);border:1px solid var(--bborder);color:var(--blue)}
+
+/* EXCHANGE GRID */
+.exg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.exc{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:11px 12px;transition:border-color .2s}
+.exc.fresh{border-color:rgba(68,138,255,.35)}
+.exc.nd{opacity:.5}
+.exh{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.exlr{display:flex;align-items:center;gap:6px}
+.exdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.exdot.ok{background:var(--green)}.exdot.nd{background:var(--muted)}
+.exn{font-size:12px;font-weight:700}
+.exsrc{font-size:9px;padding:2px 6px;border-radius:10px;font-weight:600}
+.exsrc.rest{background:var(--ybg);color:var(--yellow);border:1px solid var(--yborder)}
+.exsrc.nd{background:var(--s2);color:var(--muted);border:1px solid var(--border)}
+.exprow{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
+.eplbl{font-size:9px;color:var(--muted2)}
+.epval{font-size:12px;font-weight:700;font-family:var(--mono)}
+.epval.bid{color:var(--red)}.epval.ask{color:var(--green)}
+.exspread{font-size:9px;color:var(--muted);margin-top:3px}
+.exacts{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:9px}
+.exabt{border-radius:var(--rsm);padding:8px 4px;text-align:center;font-size:10px;font-weight:800;cursor:pointer;text-decoration:none;display:block;transition:transform .12s}
+.exabt:active{transform:scale(.96)}
+.exabt.buy{background:var(--gbg);border:1px solid var(--gborder);color:var(--green)}
+.exabt.sell{background:var(--rbg);border:1px solid var(--rborder);color:var(--red)}
+.exupd{font-size:9px;color:var(--muted);margin-top:5px}
+
+/* BOTTOM NAV */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,12,18,.96);backdrop-filter:blur(18px);border-top:1px solid var(--border);display:flex;padding:8px 0 calc(8px + var(--sb));z-index:200}
+.bni{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;opacity:.45;transition:opacity .15s;padding:4px 0}
+.bni.act{opacity:1}
+.bnic{font-size:20px;line-height:1}
+.bnil{font-size:9px;font-weight:600}
+.bni.act .bnil{color:var(--blue)}
+.tp{display:none}.tp.act{display:block}
+
+/* SIMULADOR */
+.simcard{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.simrow{margin-bottom:10px}
+.simrow label{font-size:10px;color:var(--muted2);display:block;margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.simrow select,.simrow input{width:100%;background:var(--s2);border:1px solid var(--border2);color:var(--text);border-radius:var(--rsm);padding:10px 12px;font-size:14px;font-family:var(--mono);font-weight:700;outline:none;appearance:none}
+.simrow select:focus,.simrow input:focus{border-color:var(--blue)}
+.simres{background:var(--s2);border-radius:var(--rsm);border:1px solid var(--border);padding:12px}
+.srr{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.srr:last-child{border:none}
+.srl{font-size:11px;color:var(--muted2)}
+.srv{font-size:12px;font-weight:700;font-family:var(--mono)}
+.srv.pos{color:var(--green)}.srv.neg{color:var(--red)}
+.simtotal{background:var(--s1);border-radius:var(--rsm);padding:10px 13px;margin-top:10px;display:flex;justify-content:space-between;align-items:center;border:1px solid var(--border2)}
+.stv{font-size:22px;font-weight:800;font-family:var(--mono);letter-spacing:-.5px}
+.simbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.simbtn{border-radius:12px;padding:12px 8px;text-align:center;font-size:12px;font-weight:800;text-decoration:none;display:block;cursor:pointer}
+.simbtn.buy{background:var(--green);color:#000}
+.simbtn.sell{background:var(--rbg);border:1px solid var(--rborder);color:var(--red)}
+
+/* ALERT OVERLAY */
+.aov{position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.75);backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;padding:20px}
+.aov.show{display:flex;animation:apop .25s ease-out}
+@keyframes apop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+.amod{background:#0a1a10;border:2px solid var(--green);border-radius:20px;padding:24px 20px;width:100%;max-width:360px;box-shadow:0 0 60px rgba(0,230,118,.2)}
+.amic{font-size:40px;text-align:center;margin-bottom:6px}
+.amt{font-size:20px;font-weight:800;color:var(--green);text-align:center;margin-bottom:4px}
+.amsub{font-size:13px;color:var(--muted2);text-align:center;margin-bottom:10px;line-height:1.5}
+.amtype{text-align:center;margin-bottom:10px}
+.ampnl{font-size:42px;font-weight:900;font-family:var(--mono);color:var(--green);text-align:center;margin-bottom:4px;text-shadow:0 0 24px rgba(0,230,118,.5)}
+.amdet{font-size:11px;color:var(--muted2);text-align:center;margin-bottom:18px;line-height:1.6;white-space:pre-line}
+.ambtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.ambtn{border-radius:12px;padding:14px 8px;text-align:center;font-size:13px;font-weight:800;text-decoration:none;display:block;cursor:pointer}
+.ambtn.buy{background:var(--green);color:#000}
+.ambtn.sell{background:var(--rbg);border:1px solid var(--rborder);color:var(--red)}
+.amclose{width:100%;background:var(--s2);border:1px solid var(--border2);color:var(--muted2);border-radius:12px;padding:12px;font-size:12px;font-weight:600;cursor:pointer;text-align:center}
+
+/* ALERTAS LOG */
+.alog{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.ali{background:var(--gbg);border:1px solid var(--gborder);border-radius:var(--r);padding:12px 14px}
+.alit{font-size:10px;color:var(--muted2);font-family:var(--mono);margin-bottom:3px}
+.alth{font-size:13px;font-weight:800;color:var(--green);margin-bottom:4px}
+.ald{font-size:11px;color:var(--text);line-height:1.5;margin-bottom:8px}
+.albtns{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.albtn{border-radius:var(--rsm);padding:9px;text-align:center;font-size:11px;font-weight:700;text-decoration:none;display:block}
+.albtn.buy{background:var(--gbg);border:1px solid var(--gborder);color:var(--green)}
+.albtn.sell{background:var(--rbg);border:1px solid var(--rborder);color:var(--red)}
+
+/* INFO */
+.icard{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px;font-size:12px;color:var(--muted2);line-height:1.8}
+.icard strong{color:var(--text)}
+.ftbl{width:100%;border-collapse:collapse;font-size:11px}
+.ftbl th{font-size:9px;color:var(--muted2);text-align:left;padding:4px 6px;border-bottom:1px solid var(--border);font-weight:700;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.ftbl td{padding:7px 6px;font-family:var(--mono);border-bottom:1px solid rgba(255,255,255,.025)}
+.ftbl tr:last-child td{border-bottom:none}
+.ftbl .exnm{font-family:-apple-system,'Segoe UI',sans-serif;font-weight:600}
+
+.spin{width:22px;height:22px;border:2px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:sp .8s linear infinite;margin:0 auto 10px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.ld{text-align:center;padding:28px 16px}
+.em{font-size:12px;color:var(--muted2);text-align:center;padding:22px 16px}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="logo">
+    <div class="logo-ic">Ar</div>
+    <div><div class="logo-name">ArbitrAR</div><div class="logo-sub">Multi-arbitraje · Tiempo real</div></div>
+  </div>
+  <div class="hdr-r">
+    <div class="ldot" id="ldot"></div>
+    <span class="cdbadge" id="cdb">—s</span>
+    <button class="hbtn" onclick="manualRefresh()" id="rbtn">↻</button>
+    <button class="hbtn" id="pbtn" onclick="toggleLoop()">⏸</button>
+  </div>
+</div>
+
+<!-- ALERT OVERLAY -->
+<div class="aov" id="aov">
+  <div class="amod">
+    <div class="amic">🚨</div>
+    <div class="amt">OPORTUNIDAD DETECTADA</div>
+    <div class="amsub" id="amroute">—</div>
+    <div class="amtype" id="amtype"></div>
+    <div class="ampnl" id="ampnl">+0.00%</div>
+    <div class="amdet" id="amdet">—</div>
+    <div class="ambtns">
+      <a class="ambtn buy" id="ambuy" href="#" onclick="openEx(event,this)">🟢 COMPRAR</a>
+      <a class="ambtn sell" id="amsell" href="#" onclick="openEx(event,this)">🔴 VENDER</a>
+    </div>
+    <div class="amclose" onclick="$('aov').classList.remove('show')">✕ Cerrar</div>
+  </div>
+</div>
+
+<div class="page">
+  <div class="cfg">
+    <div class="cpill"><label>Capital</label><span style="color:var(--muted2);font-size:13px">U$D</span><input type="number" id="cap" value="1000" min="10" max="999999" step="100" onchange="recalcAll()" style="width:58px"></div>
+    <div class="cpill"><label>Red USDT</label><select id="net" onchange="recalcAll()"><option value="0.5">TRC-20·0.5</option><option value="1.0">BEP-20·1.0</option><option value="5.0">ERC-20·5.0</option><option value="0.1">SOL·0.1</option></select></div>
+    <div class="cpill"><label>Alerta %</label><input type="number" id="apct" value="0.3" min="0.1" max="20" step="0.1" style="width:38px"></div>
+  </div>
+
+  <div class="fxs">
+    <div class="fxc"><span class="fl">USD Blue</span><span class="fv" id="fx-b">—</span></div>
+    <div class="fxc"><span class="fl">Oficial</span><span class="fv" id="fx-o">—</span></div>
+    <div class="fxc"><span class="fl">USDT/ARS</span><span class="fv" id="fx-u">—</span></div>
+    <div class="fxc"><span class="fl">DAI/ARS</span><span class="fv" id="fx-d">—</span></div>
+    <div class="fxc"><span class="fl">USDT≠DAI</span><span class="fv" id="fx-ud">—</span></div>
+    <div class="fxc"><span class="fl">BTC/ARS</span><span class="fv" id="fx-btc">—</span></div>
+    <div class="fxc"><span class="fl">BTC/USD</span><span class="fv" id="fx-btcusd">—</span></div>
+    <div class="fxc"><span class="fl">CCL</span><span class="fv" id="fx-ccl">—</span></div>
+  </div>
+
+  <!-- TAB MERCADO -->
+  <div class="tp act" id="tp-market">
+    <div class="krow">
+      <div class="kpi g"><div class="kl">Mejor oportunidad</div><div class="kv" id="kbest">—</div><div class="ks" id="kbr">sin datos</div></div>
+      <div class="kpi b"><div class="kl">Con ganancia</div><div class="kv" id="kcount">—</div><div class="ks">de <span id="ktotal">—</span> analizadas</div></div>
+      <div class="kpi y"><div class="kl">USDT/ARS</div><div class="kv" id="kusdt">—</div><div class="ks">promedio mercado</div></div>
+      <div class="kpi r"><div class="kl">USDT vs DAI</div><div class="kv" id="kudai">—</div><div class="ks">diferencia implícita</div></div>
+    </div>
+
+    <div class="sh">Oportunidades de arbitraje</div>
+    <!-- Filtros por tipo -->
+    <div class="ttabs">
+      <div class="ttab act" onclick="filterType('all',this)">Todas</div>
+      <div class="ttab cat-usdt" onclick="filterType('usdt',this)">USDT</div>
+      <div class="ttab cat-stable" onclick="filterType('stable',this)">Stablecoins</div>
+      <div class="ttab cat-btc" onclick="filterType('btc',this)">BTC</div>
+      <div class="ttab cat-tri" onclick="filterType('tri',this)">Triangular</div>
+      <div class="ttab cat-ccl" onclick="filterType('ccl',this)">CCL</div>
+    </div>
+    <div class="oppl" id="oppl"><div class="ld"><div class="spin"></div><div style="color:var(--muted2);font-size:12px">Calculando rutas...</div></div></div>
+
+    <div class="sh">Precios en vivo — USDT</div>
+    <div class="exg" id="exg"><div class="ld"><div class="spin"></div></div></div>
+  </div>
+
+  <!-- TAB SIMULADOR -->
+  <div class="tp" id="tp-sim">
+    <div class="sh">Simulador</div>
+    <div class="simcard">
+      <div class="simrow"><label>Capital (USD)</label><input type="number" id="sc" value="1000" min="10" step="100" oninput="simulate()"></div>
+      <div class="simrow"><label>Tipo de arbitraje</label><select id="stype" onchange="updateSimExchanges()">
+        <option value="usdt">USDT entre exchanges</option>
+        <option value="stable">USDT vs DAI (mismo exchange)</option>
+        <option value="btc">BTC entre exchanges</option>
+        <option value="tri">Triangular BTC→USDT→ARS</option>
+      </select></div>
+      <div class="simrow"><label>Comprar en</label><select id="sb" onchange="simulate()"></select></div>
+      <div class="simrow"><label>Vender en</label><select id="ss" onchange="simulate()"></select></div>
+      <div class="simrow"><label>Red de transferencia</label><select id="sn" onchange="simulate()"><option value="0.5">TRC-20 (0.5 USDT)</option><option value="1.0">BEP-20 (1.0 USDT)</option><option value="5.0">ERC-20 (5.0 USDT)</option><option value="0.1">Solana (0.1 USDT)</option></select></div>
+      <div class="simres" id="simr"><div class="em">Esperando datos...</div></div>
+      <div class="simbtns" id="simbtns" style="display:none">
+        <a class="simbtn buy" id="sbb" href="#" onclick="openEx(event,this)">🟢 Comprar</a>
+        <a class="simbtn sell" id="sbs" href="#" onclick="openEx(event,this)">🔴 Vender</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB ALERTAS -->
+  <div class="tp" id="tp-alerts">
+    <div class="sh">Alertas disparadas</div>
+    <div class="alog" id="alog"><div class="em">Sin alertas. Monitoreando 24/7.</div></div>
+  </div>
+
+  <!-- TAB INFO -->
+  <div class="tp" id="tp-info">
+    <div class="sh">Tipos de arbitraje monitoreados</div>
+    <div class="icard">
+      <div>🟢 <strong>USDT entre exchanges</strong> — Comprar USDT barato en A, vender caro en B</div>
+      <div>🟣 <strong>USDT vs DAI</strong> — Ambas valen U$D 1 pero cotizan distinto en ARS</div>
+      <div>🟡 <strong>BTC entre exchanges</strong> — Diferencia de precio BTC/ARS entre plataformas</div>
+      <div>🟠 <strong>Triangular BTC→USDT→ARS</strong> — Convertir dentro del mismo exchange aprovechando desfase</div>
+      <div>🔵 <strong>CCL implícito</strong> — Diferencia entre USDT/ARS de mercado y el CCL oficial</div>
+    </div>
+    <div class="sh">Modelo de costos</div>
+    <div class="icard">Los precios de CriptoYa son <strong>totalAsk/totalBid</strong> — ya incluyen el spread del exchange. El P&L calculado es el spread neto real. Solo se descuenta el fee de red on-chain seleccionado.</div>
+    <div class="sh">Exchanges</div>
+    <div style="background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:14px;overflow-x:auto;margin-bottom:12px">
+      <table class="ftbl"><thead><tr><th>Exchange</th><th>Spread implícito</th><th>Retiro USDT</th></tr></thead><tbody id="ftb"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<nav class="bnav">
+  <div class="bni act" data-t="market" onclick="sw('market',this)"><div class="bnic">📊</div><div class="bnil">Mercado</div></div>
+  <div class="bni" data-t="sim" onclick="sw('sim',this)"><div class="bnic">🧮</div><div class="bnil">Simulador</div></div>
+  <div class="bni" data-t="alerts" onclick="sw('alerts',this)"><div class="bnic">🔔</div><div class="bnil" id="alerttab">Alertas</div></div>
+  <div class="bni" data-t="info" onclick="sw('info',this)"><div class="bnic">ℹ️</div><div class="bnil">Info</div></div>
+</nav>
+
+<script>
+/* ═══════════════ EXCHANGES ═══════════════ */
+const EX = {
+  binance_p2p:  { name:'Binance P2P', short:'Binance',  withdrawFee:0, depositFee:0, spreadNote:'spread vendedor ~1–3%', cyKey:'binance',      buyUrl:'https://p2p.binance.com/trade/buy/USDT?fiat=ARS',    sellUrl:'https://p2p.binance.com/trade/sell/USDT?fiat=ARS',   pkg:'com.binance.dev' },
+  buenbit:      { name:'BuenBit',     short:'BuenBit',  withdrawFee:0, depositFee:0, spreadNote:'~1% compra / ~0.5% venta', cyKey:'buenbit',   buyUrl:'https://buenbit.com',    sellUrl:'https://buenbit.com',    pkg:'com.buenbit.android' },
+  letsbit:      { name:'LetsBit',     short:'LetsBit',  withdrawFee:0, depositFee:0, spreadNote:'~0.4–0.6% taker',          cyKey:'letsbit',   buyUrl:'https://letsbit.io',     sellUrl:'https://letsbit.io',     pkg:'io.letsbit.app' },
+  ripio:        { name:'Ripio',       short:'Ripio',    withdrawFee:0, depositFee:0, spreadNote:'~1–1.5% spread',           cyKey:'ripio',     buyUrl:'https://exchange.ripio.com', sellUrl:'https://exchange.ripio.com', pkg:'com.ripio.exchange' },
+  satoshitango: { name:'SatoshiTango',short:'SatoshiT', withdrawFee:0, depositFee:0, spreadNote:'~0.5% por op.',            cyKey:'satoshitango', buyUrl:'https://satoshitango.com', sellUrl:'https://satoshitango.com', pkg:'com.satoshitango.app' },
+  lemon:        { name:'Lemon Cash',  short:'Lemon',    withdrawFee:0, depositFee:0, spreadNote:'~1% compra / ~0.5% venta', cyKey:'lemoncash', buyUrl:'https://lemon.me',       sellUrl:'https://lemon.me',       pkg:'com.applemoncash' },
+  fiwind:       { name:'Fiwind',      short:'Fiwind',   withdrawFee:0, depositFee:0, spreadNote:'~0.1–0.2% spread',         cyKey:'fiwind',    buyUrl:'https://fiwind.io',      sellUrl:'https://fiwind.io',      pkg:'io.fiwind.app' },
+  astropay:     { name:'AstroPay',    short:'AstroPay', withdrawFee:0, depositFee:0, spreadNote:'~1–2% spread',             cyKey:'astropay',  buyUrl:'https://astropay.com/wallet/exchange', sellUrl:'https://astropay.com/wallet/exchange', pkg:'com.astropay.app' },
+};
+
+/* ═══════════════ ESTADO ═══════════════ */
+const S = {
+  prices:{ usdt:{}, dai:{}, btc:{}, usdc:{} },
+  fx:{}, opps:[], alerts:[], akeys:new Set(),
+  running:true, ivId:null, cdId:null, cd:15,
+  ws:null, actx:null, activeFilter:'all',
+};
+
+/* ═══════════════ UTILS ═══════════════ */
+const $=id=>document.getElementById(id);
+const fmtN=(n,d=0)=>n==null||isNaN(n)?'—':new Intl.NumberFormat('es-AR',{minimumFractionDigits:d,maximumFractionDigits:d}).format(n);
+const fmtA=n=>n==null||isNaN(n)?'—':'$'+fmtN(n,0);
+const fmtP=(n,d=2)=>n==null||isNaN(n)?'—':(n>=0?'+':'')+n.toFixed(d)+'%';
+const fmtU=n=>n==null||isNaN(n)?'—':'U$D '+Math.abs(n).toFixed(2);
+const nowt=()=>new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+const txt=(id,v)=>{const e=$(id);if(e)e.textContent=v};
+
+function buildLink(exId,action){
+  const ex=EX[exId]; if(!ex) return '#';
+  const web=action==='buy'?ex.buyUrl:ex.sellUrl;
+  if(!ex.pkg) return web;
+  return `intent://#Intent;package=${ex.pkg};scheme=https;S.browser_fallback_url=${encodeURIComponent(web)};end`;
+}
+function openEx(e,el){ e.preventDefault(); const h=el?.getAttribute('href'); if(h&&h!=='#') window.location.href=h; }
+
+/* ═══════════════ TABS ═══════════════ */
+function sw(id,el){
+  document.querySelectorAll('.tp').forEach(p=>p.classList.remove('act'));
+  document.querySelectorAll('.bni').forEach(b=>b.classList.remove('act'));
+  $('tp-'+id).classList.add('act'); el.classList.add('act');
+  if(id==='sim') simulate();
+}
+function filterType(type,el){
+  S.activeFilter=type;
+  document.querySelectorAll('.ttab').forEach(t=>t.classList.remove('act'));
+  el.classList.add('act');
+  renderOpps();
+}
+
+/* ═══════════════ AUDIO ═══════════════ */
+function initAudio(){ if(S.actx) return; try{ S.actx=new(window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
+function playAlarm(){
+  if(!S.actx) return;
+  const notes=[880,0,880,0,1100,0,1100,0,880,0,1320];
+  let t=S.actx.currentTime;
+  notes.forEach(f=>{ if(!f){t+=.07;return;} const o=S.actx.createOscillator(),g=S.actx.createGain(); o.connect(g);g.connect(S.actx.destination); o.type='square';o.frequency.setValueAtTime(f,t); g.gain.setValueAtTime(.3,t);g.gain.exponentialRampToValueAtTime(.001,t+.15); o.start(t);o.stop(t+.15);t+=.18; });
+  if(navigator.vibrate) navigator.vibrate([200,100,200,100,400]);
+}
+
+/* ═══════════════ FETCH ═══════════════ */
+async function fetchDolar(){
+  try{
+    const r=await fetch('https://dolarapi.com/v1/dolares'); if(!r.ok) throw 0;
+    const d=await r.json();
+    const g=c=>d.find(x=>x.casa===c);
+    const bl=g('blue'),of=g('oficial'),ccl=g('contadoconliqui');
+    if(bl)  S.fx.blue=(bl.compra+bl.venta)/2;
+    if(of)  S.fx.oficial=(of.compra+of.venta)/2;
+    if(ccl) S.fx.ccl=(ccl.compra+ccl.venta)/2;
+    S.fx.usdArs=S.fx.blue||S.fx.oficial||1550;
+    return true;
+  }catch(e){ if(!S.fx.usdArs) S.fx.usdArs=1550; return false; }
+}
+
+async function fetchCY(){
+  try{
+    const [rU,rD,rB,rC]=await Promise.all([
+      fetch('https://criptoya.com/api/usdt/ars/1'),
+      fetch('https://criptoya.com/api/dai/ars/1'),
+      fetch('https://criptoya.com/api/btc/ars/1'),
+      fetch('https://criptoya.com/api/usdc/ars/1'),
+    ]);
+    const [dU,dD,dB,dC]=await Promise.all([rU.json(),rD.json(),rB.json(),rC.json()]);
+    const ts=Date.now();
+    for(const [id,ex] of Object.entries(EX)){
+      if(dU[ex.cyKey]) S.prices.usdt[id]={ bidARS:dU[ex.cyKey].totalBid??dU[ex.cyKey].bid, askARS:dU[ex.cyKey].totalAsk??dU[ex.cyKey].ask, updated:ts };
+      if(dD[ex.cyKey]) S.prices.dai[id]={ bidARS:dD[ex.cyKey].totalBid??dD[ex.cyKey].bid, askARS:dD[ex.cyKey].totalAsk??dD[ex.cyKey].ask, updated:ts };
+      if(dB[ex.cyKey]) S.prices.btc[id]={ bidARS:dB[ex.cyKey].totalBid??dB[ex.cyKey].bid, askARS:dB[ex.cyKey].totalAsk??dB[ex.cyKey].ask, updated:ts };
+      if(dC[ex.cyKey]) S.prices.usdc[id]={ bidARS:dC[ex.cyKey].totalBid??dC[ex.cyKey].bid, askARS:dC[ex.cyKey].totalAsk??dC[ex.cyKey].ask, updated:ts };
+    }
+    // Promedios globales
+    const av=obj=>{ const v=Object.values(obj).filter(p=>p.askARS&&p.bidARS).map(p=>(p.askARS+p.bidARS)/2); return v.length?v.reduce((a,b)=>a+b,0)/v.length:null; };
+    S.fx.usdtArs=av(S.prices.usdt);
+    S.fx.daiArs=av(S.prices.dai);
+    S.fx.btcArs=av(S.prices.btc);
+    return true;
+  }catch(e){ return false; }
+}
+
+function connectWS(){
+  if(S.ws&&S.ws.readyState<2) return;
+  try{
+    const ws=new WebSocket('wss://stream.binance.com:9443/stream?streams=btcusdt@bookTicker');
+    ws.onmessage=e=>{ try{ const m=JSON.parse(e.data); if(m.data?.s==='BTCUSDT') S.fx.btcUsd=parseFloat(m.data.a); }catch{} };
+    ws.onclose=()=>setTimeout(connectWS,5000);
+    S.ws=ws;
+  }catch{}
+}
+
+/* ═══════════════ MOTOR DE ARBITRAJE ═══════════════ */
+
+/* 1. USDT entre exchanges (ya existía) */
+function calcUSDT(bId,sId,cap){
+  const pb=S.prices.usdt[bId],ps=S.prices.usdt[sId];
+  if(!pb?.askARS||!ps?.bidARS) return null;
+  const nf=parseFloat($('net')?.value||.5);
+  const capARS=cap*(S.fx.usdArs||1550);
+  const ub=capARS/pb.askARS;
+  const un=ub-nf;
+  if(un<=0) return null;
+  const pARS=un*ps.bidARS-capARS;
+  const pPct=(pARS/capARS)*100;
+  return{ type:'usdt', bId, sId, pPct, pARS, pUSD:pARS/(S.fx.usdArs||1550),
+    askARS:pb.askARS, bidARS:ps.bidARS, spreadBruto:((ps.bidARS-pb.askARS)/pb.askARS)*100,
+    desc:`USDT: ${EX[bId].short} → ${EX[sId].short}`, unitsNet:un };
+}
+
+/* 2. USDT vs DAI en el mismo exchange */
+function calcStable(exId,cap){
+  const pu=S.prices.usdt[exId], pd=S.prices.dai[exId];
+  if(!pu?.askARS||!pd?.bidARS) return null;
+  // Comprar USDT (más barato) y vender como DAI (más caro) o viceversa
+  const capARS=cap*(S.fx.usdArs||1550);
+  // Ruta A: comprar USDT, vender DAI
+  const unA=capARS/pu.askARS;
+  const pA=unA*pd.bidARS-capARS;
+  const pPctA=(pA/capARS)*100;
+  // Ruta B: comprar DAI, vender USDT
+  const unB=capARS/pd.askARS;
+  const pB=unB*pu.bidARS-capARS;
+  const pPctB=(pB/capARS)*100;
+  // Tomar la mejor
+  if(pPctA>=pPctB && pPctA>-99){
+    return{ type:'stable', bId:exId, sId:exId, pPct:pPctA, pARS:pA, pUSD:pA/(S.fx.usdArs||1550),
+      askARS:pu.askARS, bidARS:pd.bidARS, spreadBruto:((pd.bidARS-pu.askARS)/pu.askARS)*100,
+      desc:`USDT→DAI en ${EX[exId].short}`, unitsNet:unA,
+      detail:`Comprás USDT vía CCL @ ${fmtA(S.fx.ccl)} · Vendés en ${EX[exId].short} @ ${fmtA(pu.bidARS)}`, unitsNet:usdtViaCCL,
+    detail:`Comprás USDT vía CCL @ ${fmtA(S.fx.ccl)} · Vendés en ${EX[exId].short} @ ${fmtA(pu.bidARS)}` };
+}
+
+/* 3. BTC entre exchanges */
+function calcBTC(bId,sId,cap){
+  const pb=S.prices.btc[bId],ps=S.prices.btc[sId];
+  if(!pb?.askARS||!ps?.bidARS) return null;
+  const capARS=cap*(S.fx.usdArs||1550);
+  const btcBought=capARS/pb.askARS;
+  const pARS=btcBought*ps.bidARS-capARS;
+  const pPct=(pARS/capARS)*100;
+  return{ type:'btc', bId, sId, pPct, pARS, pUSD:pARS/(S.fx.usdArs||1550),
+    askARS:pb.askARS, bidARS:ps.bidARS, spreadBruto:((ps.bidARS-pb.askARS)/pb.askARS)*100,
+    desc:`BTC: ${EX[bId].short} -> ${EX[sId].short}`, unitsNet:btcBought };
+}
+
+/* 4. Triangular ARS->BTC->USDT->ARS */
+function calcTriangular(exId,cap){
+  const pb=S.prices.btc[exId], pu=S.prices.usdt[exId];
+  if(!pb?.askARS||!pu?.bidARS||!S.fx.btcUsd) return null;
+  const capARS=cap*(S.fx.usdArs||1550);
+  const btc=capARS/pb.askARS;
+  const usdtFromBtc=btc*S.fx.btcUsd;
+  const arsFinales=usdtFromBtc*pu.bidARS;
+  const pARS=arsFinales-capARS;
+  const pPct=(pARS/capARS)*100;
+  return{ type:'tri', bId:exId, sId:exId, pPct, pARS, pUSD:pARS/(S.fx.usdArs||1550),
+    askARS:pb.askARS, bidARS:pu.bidARS, spreadBruto:pPct,
+    desc:`Triangular ARS->BTC->USD->ARS en ${EX[exId].short}`, unitsNet:btc };
+}
+
+
+/* 5. CCL implícito */
+function calcCCL(exId,cap){
+  const pu=S.prices.usdt[exId];
+  if(!pu?.askARS||!pu?.bidARS||!S.fx.ccl) return null;
+  const capARS=cap*(S.fx.usdArs||1550);
+  const usdtViaCCL=capARS/S.fx.ccl;
+  const revARS=usdtViaCCL*pu.bidARS;
+  const pARS=revARS-capARS;
+  const pPct=(pARS/capARS)*100;
+  const spread=((pu.bidARS-S.fx.ccl)/S.fx.ccl)*100;
+  return{ type:'ccl', bId:exId, sId:exId, pPct, pARS, pUSD:pARS/(S.fx.usdArs||1550),
+    askARS:S.fx.ccl, bidARS:pu.bidARS, spreadBruto:spread,
+    desc:`CCL→USDT en ${EX[exId].short}`, unitsNet:usdtViaCCL,
+    detail:`Comprás USDT vía CCL @ ${fmtA(S.fx.ccl)} · Vendés en ${EX[exId].short} @ ${fmtA(pu.bidARS)}` };
+}
+
+
+function computeAll(){
+  const cap=parseFloat($('cap')?.value||1000);
+  const ids=Object.keys(EX);
+  const opps=[];
+  // Tipo 1: USDT entre exchanges
+  for(const b of ids) for(const s of ids){ if(b===s) continue; const r=calcUSDT(b,s,cap); if(r) opps.push(r); }
+  // Tipo 2: Stablecoins (mismo exchange)
+  for(const id of ids){ const r=calcStable(id,cap); if(r) opps.push(r); }
+  // Tipo 3: BTC entre exchanges
+  for(const b of ids) for(const s of ids){ if(b===s) continue; const r=calcBTC(b,s,cap); if(r) opps.push(r); }
+  // Tipo 4: Triangular (mismo exchange)
+  for(const id of ids){ const r=calcTriangular(id,cap); if(r) opps.push(r); }
+  // Tipo 5: CCL implícito
+  for(const id of ids){ const r=calcCCL(id,cap); if(r) opps.push(r); }
+  opps.sort((a,b)=>b.pPct-a.pPct);
+  S.opps=opps;
+}
+
+/* ═══════════════ RENDER FX + KPI ═══════════════ */
+function renderFX(){
+  txt('fx-b',S.fx.blue?fmtA(S.fx.blue):'—');
+  txt('fx-o',S.fx.oficial?fmtA(S.fx.oficial):'—');
+  txt('fx-u',S.fx.usdtArs?fmtA(S.fx.usdtArs):'—');
+  txt('fx-d',S.fx.daiArs?fmtA(S.fx.daiArs):'—');
+  if(S.fx.usdtArs&&S.fx.daiArs){
+    const diff=((S.fx.usdtArs-S.fx.daiArs)/S.fx.daiArs*100);
+    txt('fx-ud',(diff>=0?'+':'')+diff.toFixed(2)+'%');
+  }
+  txt('fx-btc',S.fx.btcArs?'$'+fmtN(S.fx.btcArs/1000000,2)+'M':'—');
+  txt('fx-btcusd',S.fx.btcUsd?'$'+fmtN(S.fx.btcUsd,0):'—');
+  txt('fx-ccl',S.fx.ccl?fmtA(S.fx.ccl):'—');
+}
+
+function renderKPI(){
+  const best=S.opps[0];
+  const pos=S.opps.filter(o=>o.pPct>0).length;
+  if(best){ txt('kbest',fmtP(best.pPct)); txt('kbr',best.desc||'—'); }
+  else{ txt('kbest','—'); txt('kbr','sin datos'); }
+  txt('kcount',pos); txt('ktotal',S.opps.length);
+  txt('kusdt',S.fx.usdtArs?fmtA(S.fx.usdtArs):'—');
+  if(S.fx.usdtArs&&S.fx.daiArs){
+    const d=((S.fx.usdtArs-S.fx.daiArs)/S.fx.daiArs*100);
+    txt('kudai',(d>=0?'+':'')+d.toFixed(2)+'%');
+  }
+}
+
+/* ═══════════════ RENDER OPPS ═══════════════ */
+const TYPE_LABEL={ usdt:'USDT', stable:'USDT/DAI', btc:'BTC', tri:'Triangular', ccl:'CCL' };
+const TYPE_CSS={ usdt:'usdt', stable:'stable', btc:'btc', tri:'tri', ccl:'ccl' };
+
+function renderOpps(){
+  const thr=parseFloat($('apct')?.value||.3);
+  let opps=S.opps;
+  if(S.activeFilter!=='all') opps=opps.filter(o=>o.type===S.activeFilter||(S.activeFilter==='ccl'&&o.type==='ccl'));
+  if(!opps.length){ $('oppl').innerHTML='<div class="ld"><div class="spin"></div><div style="color:var(--muted2);font-size:12px">Calculando...</div></div>'; return; }
+  const html=opps.slice(0,30).map(o=>{
+    const be=EX[o.bId],se=EX[o.sId];
+    const same=o.bId===o.sId;
+    const ip=o.pPct>=thr,in_=o.pPct>0&&o.pPct<thr;
+    const pc=ip?'pos':in_?'near':'neg';
+    const cc=ip?'profit':in_?'near':'';
+    const sg=o.pPct>=0?'+':'−';
+    const buyH=buildLink(o.bId,'buy'), sellH=buildLink(o.sId,'sell');
+    const buyLbl=o.type==='ccl'?'📋 Cómo operar':o.type==='tri'?'🟢 BTC/ARS':o.type==='stable'?'🔄 Cambiar':'🟢 Comprar';
+    return `<div class="oppc ${cc}">
+      <div class="oppt">
+        <div class="oppr">
+          <div class="opptitle">
+            <span class="oppex">${be.short}</span>
+            ${!same?`<span class="opparr">→</span><span class="oppex">${se.short}</span>`:''}
+            <span class="opptype ${TYPE_CSS[o.type]}">${TYPE_LABEL[o.type]}</span>
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">${o.desc}</div>
+        </div>
+        <span class="opppnl ${pc}">${fmtP(o.pPct)}</span>
+      </div>
+      <div class="oppdet">
+        <div class="opdd"><div class="oddl">${o.type==='ccl'?'CCL':o.type==='btc'?'BTC Ask':'Ask compra'}</div><div class="oddv">${fmtA(o.askARS)}</div></div>
+        <div class="opdd"><div class="oddl">${o.type==='btc'?'BTC Bid':'Bid venta'}</div><div class="oddv">${fmtA(o.bidARS)}</div></div>
+        <div class="opdd"><div class="oddl">Spread bruto</div><div class="oddv ${o.spreadBruto>=0?'pos':'neg'}">${o.spreadBruto>=0?'+':''}${o.spreadBruto.toFixed(2)}%</div></div>
+        <div class="opdd"><div class="oddl">Gan. ARS</div><div class="oddv ${o.pPct>=0?'pos':'neg'}">${sg}${fmtA(Math.abs(o.pARS))}</div></div>
+        <div class="opdd"><div class="oddl">Gan. USD</div><div class="oddv ${o.pPct>=0?'pos':'neg'}">${sg}${fmtU(o.pUSD)}</div></div>
+        <div class="opdd"><div class="oddl">${o.type==='btc'?'BTC':'USDT'} netos</div><div class="oddv">${o.unitsNet?.toFixed(o.type==='btc'?6:1)||'—'}</div></div>
+      </div>
+      ${o.detail?`<div style="font-size:10px;color:var(--muted);margin-bottom:8px;line-height:1.5">${o.detail}</div>`:''}
+      <div class="oppacts">
+        <a class="opabt buy" href="${buyH}" onclick="openEx(event,this)">${buyLbl}<br><span style="font-size:9px;font-weight:400">${be.short}</span></a>
+        <a class="opabt sell" href="${sellH}" onclick="openEx(event,this)">🔴 Vender<br><span style="font-size:9px;font-weight:400">${se.short}</span></a>
+        <div class="opabt sig" onclick="copySignal(${JSON.stringify(o.desc)},${JSON.stringify(fmtP(o.pPct))},${JSON.stringify(o.detail||'')})">📋 Señal<br><span style="font-size:9px;font-weight:400">Copiar</span></div>
+      </div>
+    </div>`;
+  }).join('');
+  $('oppl').innerHTML=html;
+}
+
+/* ═══════════════ EXCHANGES LIVE ═══════════════ */
+function renderExchanges(){
+  const now=Date.now();
+  $('exg').innerHTML=Object.entries(EX).map(([id,ex])=>{
+    const p=S.prices.usdt[id]||{};
+    const age=p.updated?Math.round((now-p.updated)/1000):null;
+    const ok=age!==null&&age<90;
+    const sp=p.askARS&&p.bidARS?((p.bidARS-p.askARS)/p.askARS*100).toFixed(2):null;
+    const buyH=buildLink(id,'buy'), sellH=buildLink(id,'sell');
+    return `<div class="exc${!ok?' nd':''}${age!==null&&age<5?' fresh':''}">
+      <div class="exh"><div class="exlr"><div class="exdot ${ok?'ok':'nd'}"></div><span class="exn">${ex.short}</span></div><span class="exsrc ${ok?'rest':'nd'}">${ok?'LIVE':'sin datos'}</span></div>
+      <div class="exprow"><span class="eplbl">Bid</span><span class="epval bid">${p.bidARS?fmtA(p.bidARS):'—'}</span></div>
+      <div class="exprow"><span class="eplbl">Ask</span><span class="epval ask">${p.askARS?fmtA(p.askARS):'—'}</span></div>
+      ${sp?`<div class="exspread">Spread: ${sp}%</div>`:''}
+      <div class="exacts">
+        <a class="exabt buy" href="${buyH}" onclick="openEx(event,this)">🟢 Comprar</a>
+        <a class="exabt sell" href="${sellH}" onclick="openEx(event,this)">🔴 Vender</a>
+      </div>
+      <div class="exupd">${age!==null?`Hace ${age}s`:'Sin datos'}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ═══════════════ ALERTAS ═══════════════ */
+function checkAlerts(){
+  const thr=parseFloat($('apct')?.value||.3);
+  const cap=parseFloat($('cap')?.value||1000);
+  S.opps.filter(o=>o.pPct>=thr).forEach(o=>{
+    const key=`${o.type}-${o.bId}-${o.sId}-${Math.floor(o.pPct*10)}`;
+    if(S.akeys.has(key)) return;
+    S.akeys.add(key); setTimeout(()=>S.akeys.delete(key),120000);
+    fireAlert(o,cap);
+  });
+}
+
+function fireAlert(o,cap){
+  playAlarm();
+  const be=EX[o.bId],se=EX[o.sId];
+  txt('amroute',o.desc);
+  $('amtype').innerHTML=`<span class="opptype ${TYPE_CSS[o.type]}" style="display:inline-block">${TYPE_LABEL[o.type]}</span>`;
+  txt('ampnl',fmtP(o.pPct));
+  $('amdet').textContent=(o.detail||`${be.name} → ${se.name}\n${fmtA(o.askARS)} → ${fmtA(o.bidARS)}`)+`\nCapital U$D ${cap} → Ganancia ${fmtA(o.pARS)} ARS`;
+  $('ambuy').href=buildLink(o.bId,'buy');
+  $('amsell').href=buildLink(o.sId,'sell');
+  $('aov').classList.add('show');
+  if(Notification?.permission==='granted'){
+    const n=new Notification(`🚨 ArbitrAR — ${TYPE_LABEL[o.type]}`,{ body:`${o.desc}\n${fmtP(o.pPct)} neto | +${fmtA(o.pARS)} ARS`, requireInteraction:true });
+    n.onclick=()=>{ window.focus(); $('aov').classList.add('show'); };
+  }
+  addAlertLog(o,cap,be,se);
+}
+
+function addAlertLog(o,cap,be,se){
+  const log=$('alog');
+  if(log.querySelector('.em')) log.innerHTML='';
+  const d=document.createElement('div'); d.className='ali';
+  d.innerHTML=`<div class="alit">${nowt()} · <span class="opptype ${TYPE_CSS[o.type]}" style="display:inline-block">${TYPE_LABEL[o.type]}</span></div>
+    <div class="alth">${fmtP(o.pPct)} — ${o.desc}</div>
+    <div class="ald">${o.detail||''}<br>Ganancia: ${fmtA(o.pARS)} · ${fmtU(o.pUSD)}</div>
+    <div class="albtns">
+      <a class="albtn buy" href="${buildLink(o.bId,'buy')}" onclick="openEx(event,this)">🟢 ${be.short}</a>
+      <a class="albtn sell" href="${buildLink(o.sId,'sell')}" onclick="openEx(event,this)">🔴 ${se.short}</a>
+    </div>`;
+  log.insertBefore(d,log.firstChild);
+  $('alerttab').style.color='var(--green)';
+}
+
+/* ═══════════════ SEÑAL ═══════════════ */
+function copySignal(desc,pnl,detail){
+  const cap=$('cap')?.value||1000;
+  const t=`🚨 SEÑAL ArbitrAR\n\n${desc}\nP&L neto: ${pnl}\n${detail}\nCapital: U$D ${cap}\n\n⚠️ Verificar antes de operar.`;
+  navigator.clipboard?.writeText(t).catch(()=>{});
+}
+
+/* ═══════════════ SIMULADOR ═══════════════ */
+function updateSimExchanges(){
+  const type=$('stype')?.value||'usdt';
+  const opts=Object.entries(EX).map(([id,ex])=>`<option value="${id}">${ex.name}</option>`).join('');
+  $('sb').innerHTML=opts; $('ss').innerHTML=opts;
+  // Para tipos mismo exchange, ocultar "vender en"
+  const ssRow=$('ss').closest('.simrow');
+  const snRow=$('sn').closest('.simrow');
+  if(type==='stable'||type==='tri'){ ssRow.style.display='none'; snRow.style.display='none'; }
+  else{ ssRow.style.display=''; snRow.style.display=type==='btc'?'none':''; }
+  $('ss').value='buenbit';
+  simulate();
+}
+
+function simulate(){
+  const bId=$('sb')?.value, sId=$('ss')?.value;
+  const cap=parseFloat($('sc')?.value||1000);
+  const nf=parseFloat($('sn')?.value||.5);
+  const type=$('stype')?.value||'usdt';
+  const el=$('simr'), btns=$('simbtns');
+  const usdArs=S.fx.usdArs||1550;
+  const capARS=cap*usdArs;
+  let res=null;
+  if(type==='usdt') res=calcUSDT(bId,sId,cap);
+  else if(type==='stable') res=calcStable(bId,cap);
+  else if(type==='btc') res=calcBTC(bId,sId,cap);
+  else if(type==='tri') res=calcTriangular(bId,cap);
+  if(!res){ el.innerHTML='<div class="em">Sin datos suficientes para esta ruta.</div>'; btns.style.display='none'; return; }
+  const cls=res.pPct>0?'pos':'neg'; const sg=res.pPct>=0?'+':'−';
+  el.innerHTML=`
+    <div class="srr"><span class="srl">Tipo</span><span class="srv"><span class="opptype ${TYPE_CSS[res.type]}" style="display:inline-block">${TYPE_LABEL[res.type]}</span></span></div>
+    <div class="srr"><span class="srl">Ask compra</span><span class="srv">${fmtA(res.askARS)}</span></div>
+    <div class="srr"><span class="srl">Spread bruto</span><span class="srv ${res.spreadBruto>=0?'pos':'neg'}">${res.spreadBruto>=0?'+':''}${res.spreadBruto.toFixed(2)}%</span></div>
+    <div class="srr"><span class="srl">Bid venta</span><span class="srv">${fmtA(res.bidARS)}</span></div>
+    <div class="srr"><span class="srl">Ganancia ARS</span><span class="srv ${cls}">${sg}${fmtA(Math.abs(res.pARS))}</span></div>
+    <div class="srr"><span class="srl">Ganancia USD</span><span class="srv ${cls}">${sg}${fmtU(res.pUSD)}</span></div>`;
+  $('simtotal')?.remove();
+  const tot=document.createElement('div'); tot.className='simtotal'; tot.id='simtotal';
+  tot.innerHTML=`<div><div style="font-size:12px;font-weight:700">P&L NETO</div><div style="font-size:10px;color:var(--muted2)">${sg}${fmtA(Math.abs(res.pARS))}</div></div><div class="stv ${cls}">${sg}${Math.abs(res.pPct).toFixed(2)}%</div>`;
+  el.parentNode.insertBefore(tot,btns);
+  $('sbb').href=buildLink(bId,'buy'); $('sbs').href=buildLink(sId,'sell');
+  $('sbb').textContent=`🟢 ${EX[bId].short}`; $('sbs').textContent=`🔴 ${EX[sId].short}`;
+  btns.style.display='grid';
+}
+
+/* ═══════════════ FEES TABLE ═══════════════ */
+function renderFees(){
+  $('ftb').innerHTML=Object.entries(EX).map(([,e])=>
+    `<tr><td class="exnm">${e.name}</td><td style="font-size:10px;color:var(--muted2)">${e.spreadNote}</td><td>${e.withdrawFee||'—'}</td></tr>`).join('');
+}
+
+/* ═══════════════ STATUS + LOOP ═══════════════ */
+function setStatus(m){
+  const d=$('ldot');
+  if(m==='live'){d.style.background='var(--green)';d.style.boxShadow='0 0 8px var(--green)';d.classList.add('on');}
+  if(m==='upd'){d.style.background='var(--yellow)';d.style.boxShadow='0 0 8px var(--yellow)';}
+  if(m==='paused'){d.style.background='var(--muted)';d.style.boxShadow='none';d.classList.remove('on');txt('cdb','—');}
+}
+
+async function runCycle(){
+  setStatus('upd');
+  await Promise.all([fetchDolar(),fetchCY()]);
+  computeAll();
+  renderFX(); renderKPI(); renderOpps(); renderExchanges();
+  checkAlerts(); simulate();
+  setStatus('live');
+}
+
+function startLoop(){
+  runCycle();
+  S.ivId=setInterval(runCycle,15000);
+  S.cd=15; txt('cdb','15s');
+  clearInterval(S.cdId);
+  S.cdId=setInterval(()=>{ S.cd--; txt('cdb',S.cd+'s'); if(S.cd<=0) S.cd=15; },1000);
+}
+function toggleLoop(){
+  const b=$('pbtn');
+  if(S.running){ clearInterval(S.ivId);clearInterval(S.cdId);S.running=false;b.textContent='▶';b.classList.add('pause');setStatus('paused'); }
+  else{ S.running=true;b.textContent='⏸';b.classList.remove('pause');startLoop(); }
+}
+async function manualRefresh(){
+  const b=$('rbtn');b.textContent='…';b.disabled=true;
+  await runCycle();
+  if(S.running){ clearInterval(S.ivId);clearInterval(S.cdId);S.ivId=setInterval(runCycle,15000);S.cd=15;S.cdId=setInterval(()=>{S.cd--;txt('cdb',S.cd+'s');if(S.cd<=0)S.cd=15;},1000); }
+  b.textContent='↻';b.disabled=false;
+}
+function recalcAll(){ computeAll();renderKPI();renderOpps();simulate(); }
+
+/* ═══════════════ INIT ═══════════════ */
+['touchstart','click'].forEach(ev=>document.addEventListener(ev,()=>initAudio(),{once:true}));
+if(Notification?.permission==='default') Notification.requestPermission();
+updateSimExchanges(); renderFees();
+connectWS(); startLoop();
+</script>
+</body>
+</html>
