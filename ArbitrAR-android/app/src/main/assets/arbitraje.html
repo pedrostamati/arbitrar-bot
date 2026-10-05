@@ -386,8 +386,15 @@ function playAlarm(){
 /* ═══════════════ FETCH ═══════════════ */
 async function fetchDolar(){
   try{
-    const r=await fetch('https://dolarapi.com/v1/dolares'); if(!r.ok) throw 0;
-    const d=await r.json();
+    let d;
+    if(window.AndroidApp&&window.AndroidApp.fetchUrl){
+      const s=window.AndroidApp.fetchUrl('https://dolarapi.com/v1/dolares');
+      if(!s) throw new Error('bridge null');
+      d=JSON.parse(s);
+    } else {
+      const r=await fetch('https://dolarapi.com/v1/dolares'); if(!r.ok) throw 0;
+      d=await r.json();
+    }
     const g=c=>d.find(x=>x.casa===c);
     const bl=g('blue'),of=g('oficial'),ccl=g('contadoconliqui');
     if(bl)  S.fx.blue=(bl.compra+bl.venta)/2;
@@ -400,13 +407,28 @@ async function fetchDolar(){
 
 async function fetchCY(){
   try{
-    const [rU,rD,rB,rC]=await Promise.all([
-      fetch('https://criptoya.com/api/usdt/ars/1'),
-      fetch('https://criptoya.com/api/dai/ars/1'),
-      fetch('https://criptoya.com/api/btc/ars/1'),
-      fetch('https://criptoya.com/api/usdc/ars/1'),
-    ]);
-    const [dU,dD,dB,dC]=await Promise.all([rU.json(),rD.json(),rB.json(),rC.json()]);
+    let dU,dD,dB,dC;
+    if(window.AndroidApp && window.AndroidApp.fetchUrl){
+      const [sU,sD,sB,sC]=[
+        window.AndroidApp.fetchUrl('https://criptoya.com/api/usdt/ars/1'),
+        window.AndroidApp.fetchUrl('https://criptoya.com/api/dai/ars/1'),
+        window.AndroidApp.fetchUrl('https://criptoya.com/api/btc/ars/1'),
+        window.AndroidApp.fetchUrl('https://criptoya.com/api/usdc/ars/1'),
+      ];
+      dU=sU?JSON.parse(sU):null;
+      dD=sD?JSON.parse(sD):null;
+      dB=sB?JSON.parse(sB):null;
+      dC=sC?JSON.parse(sC):null;
+      if(!dU) throw new Error('bridge null usdt');
+    } else {
+      const [rU,rD,rB,rC]=await Promise.all([
+        fetch('https://criptoya.com/api/usdt/ars/1'),
+        fetch('https://criptoya.com/api/dai/ars/1'),
+        fetch('https://criptoya.com/api/btc/ars/1'),
+        fetch('https://criptoya.com/api/usdc/ars/1'),
+      ]);
+      [dU,dD,dB,dC]=await Promise.all([rU.json(),rD.json(),rB.json(),rC.json()]);
+    }
     const ts=Date.now();
     for(const [id,ex] of Object.entries(EX)){
       if(dU[ex.cyKey]) S.prices.usdt[id]={ bidARS:dU[ex.cyKey].totalBid??dU[ex.cyKey].bid, askARS:dU[ex.cyKey].totalAsk??dU[ex.cyKey].ask, updated:ts };
