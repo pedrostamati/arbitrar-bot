@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <!-- Certificados raiz del sistema (como hasta ahora) -->
+            <certificates src="system"/>
+            <!-- Let's Encrypt "Generation Y": Root YR + intermediarios YR1, YR2 y YR3.
+                 Android todavia no incluye Root YR y el hosting no envia la firma
+                 cruzada con ISRG Root X1, por eso el WebView rechazaba el certificado.
+                 Root YR SHA-256: e57b7e6f150c419102e8d5c055729ff967b9d1a829bf00cec89ca604ebf4a86f -->
+            <certificates src="@raw/letsencrypt_gen_y"/>
+        </trust-anchors>
+    </base-config>
+</network-security-config>
