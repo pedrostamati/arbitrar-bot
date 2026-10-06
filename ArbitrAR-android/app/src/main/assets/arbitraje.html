@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0c12">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>ArbitrAR</title>
+<!-- manifest inyectado inline -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='32' fill='%230a0c12'/><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23448aff'/><stop offset='1' stop-color='%23b388ff'/></linearGradient></defs><rect x='24' y='24' width='144' height='144' rx='24' fill='url(%23g)'/><text x='96' y='126' font-family='system-ui' font-weight='800' font-size='80' fill='white' text-anchor='middle'>Ar</text></svg>">
+<style>
+:root{
+  --bg:#0a0c12;--s1:#111420;--s2:#181c2e;--s3:#1e2338;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.13);
+  --text:#e8eaf2;--muted:#5a607a;--muted2:#8890aa;
+  --green:#00e676;--green2:#00c853;--gbg:rgba(0,230,118,0.08);--gborder:rgba(0,230,118,0.22);
+  --red:#ff5252;--rbg:rgba(255,82,82,0.08);--rborder:rgba(255,82,82,0.22);
+  --yellow:#ffd740;--ybg:rgba(255,215,64,0.08);--yborder:rgba(255,215,64,0.22);
+  --blue:#448aff;--bbg:rgba(68,138,255,0.08);--bborder:rgba(68,138,255,0.22);
+  --purple:#b388ff;--pbg:rgba(179,136,255,0.08);--pborder:rgba(179,136,255,0.22);
+  --r:14px;--rsm:8px;--mono:'SF Mono','Fira Code',monospace;
+  --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI',sans-serif;font-size:14px}
+body{min-height:100dvh;padding-top:var(--st);padding-bottom:calc(var(--sb) + 62px)}
+
+/* HDR */
+.hdr{position:sticky;top:var(--st);z-index:100;background:rgba(10,12,18,0.94);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.logo{display:flex;align-items:center;gap:8px}
+.logo-ic{width:30px;height:30px;background:linear-gradient(135deg,#448aff,#b388ff);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0}
+.logo-name{font-size:16px;font-weight:700;letter-spacing:-.5px}
+.logo-sub{font-size:10px;color:var(--muted2);line-height:1}
+.hdr-r{display:flex;align-items:center;gap:6px}
+.ldot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);flex-shrink:0}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:.3}}
+.ldot.on{animation:bl 1.5s infinite}
+.hbtn{background:var(--s2);border:1px solid var(--border2);color:var(--text);border-radius:8px;padding:6px 11px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap}
+.hbtn.pause{background:var(--rbg);border-color:var(--rborder);color:var(--red)}
+.cdbadge{font-size:10px;color:var(--muted2);font-family:var(--mono);min-width:22px;text-align:center}
+
+/* PAGE */
+.page{padding:12px 12px 0}
+
+/* CFG */
+.cfg{display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.cfg::-webkit-scrollbar{display:none}
+.cpill{background:var(--s1);border:1px solid var(--border2);border-radius:24px;padding:6px 13px;display:flex;align-items:center;gap:6px;white-space:nowrap;flex-shrink:0}
+.cpill label{font-size:10px;color:var(--muted2)}
+.cpill input,.cpill select{background:transparent;border:none;color:var(--text);font-size:13px;font-weight:700;font-family:var(--mono);outline:none;cursor:pointer}
+
+/* FX */
+.fxs{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;scrollbar-width:none}
+.fxs::-webkit-scrollbar{display:none}
+.fxc{background:var(--s1);border:1px solid var(--border);border-radius:20px;padding:5px 11px;white-space:nowrap;flex-shrink:0}
+.fxc .fl{font-size:9px;color:var(--muted2);display:block;line-height:1;margin-bottom:2px}
+.fxc .fv{font-size:12px;font-weight:700;font-family:var(--mono)}
+
+/* KPI */
+.krow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.kpi{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:12px 13px}
+.kl{font-size:10px;color:var(--muted2);margin-bottom:4px}
+.kv{font-size:20px;font-weight:800;font-family:var(--mono);letter-spacing:-.5px;line-height:1}
+.ks{font-size:10px;color:var(--muted);margin-top:3px}
+.kpi.g .kv{color:var(--green)}.kpi.r .kv{color:var(--red)}.kpi.b .kv{color:var(--blue)}.kpi.y .kv{color:var(--yellow)}
+
+/* SECHDR */
+.sh{font-size:10px;font-weight:700;color:var(--muted2);letter-spacing:1px;text-transform:uppercase;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+.sh::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* EXCHANGE GRID */
+.exg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.exc{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:11px 12px;transition:border-color .2s}
+.exc.fresh{border-color:rgba(68,138,255,.35)}
+.exc.nd{opacity:.5}
+.exh{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.exlr{display:flex;align-items:center;gap:6px}
+.exdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.exdot.ok{background:var(--green)}.exdot.err{background:var(--red)}.exdot.nd{background:var(--muted)}
+.exn{font-size:12px;font-weight:700}
+.exsrc{font-size:9px;padding:2px 6px;border-radius:10px;font-weight:600}
+.exsrc.rest{background:var(--ybg);color:var(--yellow);border:1px solid var(--yborder)}
+.exsrc.nd{background:var(--s2);color:var(--muted);border:1px solid var(--border)}
+.exprow{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
+.eplbl{font-size:9px;color:var(--muted2)}
+.epval{font-size:12px;font-weight:700;font-family:var(--mono)}
+.epval.bid{color:var(--red)}.epval.ask{color:var(--green)}
+.exspread{font-size:9px;color:var(--muted);margin-top:3px}
+/* 2 botones de acción en cada exchange card */
+.exacts{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:9px}
+.exabt{border-radius:var(--rsm);padding:8px 4px;text-align:center;font-size:10px;font-weight:800;cursor:pointer;text-decoration:none;display:block;transition:transform .12s;letter-spacing:.2px}
+.exabt:active{transform:scale(.96)}
+.exabt.buy{background:var(--gbg);border:1px solid var(--gborder);color:var(--green)}
+.exabt.sell{background:var(--rbg);border:1px solid var(--rborder);color:var(--red)}
+.exupd{font-size:9px;color:var(--muted);margin-top:5px}
+
+/* OPP LIST */
+.oppl{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.oppc{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;transition:border-color .2s}
+.oppc.profit{border-color:var(--gborder);background:linear-gradient(135deg,var(--s1),rgba(0,230,118,.04))}
+.oppc.near{border-color:var(--yborder)}
+.oppt{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.oppr{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.oppex{font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;background:var(--s2);border:1px solid var(--border2);white-space:nowrap}
+.opparr{font-size:12px;color:var(--muted2)}
+.opppnl{font-size:18px;font-weight:800;font-family:var(--mono);letter-spacing:-.5px}
+.opppnl.pos{color:var(--green)}.opppnl.neg{color:var(--red)}.opppnl.near{color:var(--yellow)}
+.oppdet{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:10px}
+.opdd{background:var(--s2);border-radius:var(--rsm);padding:6px 7px;text-align:center}
+.oddl{font-size:9px;color:var(--muted2);margin-bottom:2px}
+.oddv{font-size:11px;font-weight:700;font-family:var(--mono)}
+.oddv.pos{color:var(--green)}.oddv.neg{color:var(--red)}
+/* 3 botones de acción */
+.oppacts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.opabt{border-radius:var(--rsm);padding:9px 4px;text-align:center;font-size:10px;font-weight:800;text-decoration:none;display:block;cursor:pointer;transition:transform .12s;line-height:1.3}
+.opabt:active{transform:scale(.96)}
+.opabt.buy{background:var(--gbg);border:1px solid var(--gborder);color:var(--green)}
+.opabt.sell{background:var(--rbg);border:1px solid var(--rborder);color:var(--red)}
+.opabt.sig{background:var(--bbg);border:1px solid var(--bborder);color:var(--blue)}
+
+/* BOTTOM NAV */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,12,18,.96);backdrop-filter:blur(18px);border-top:1px solid var(--border);display:flex;padding:8px 0 calc(8px + var(--sb));z-index:200}
+.bni{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;opacity:.45;transition:opacity .15s;padding:4px 0}
+.bni.act{opacity:1}
+.bnic{font-size:20px;line-height:1}
+.bnil{font-size:9px;font-weight:600}
+.bni.act .bnil{color:var(--blue)}
+
+/* TAB PANELS */
+.tp{display:none}.tp.act{display:block}
+
+/* SIMULADOR */
+.simcard{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.simrow{margin-bottom:10px}
+.simrow label{font-size:10px;color:var(--muted2);display:block;margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.simrow select,.simrow input{width:100%;background:var(--s2);border:1px solid var(--border2);color:var(--text);border-radius:var(--rsm);padding:10px 12px;font-size:14px;font-family:var(--mono);font-weight:700;outline:none;appearance:none}
+.simrow select:focus,.simrow input:focus{border-color:var(--blue)}
+.simres{background:var(--s2);border-radius:var(--rsm);border:1px solid var(--border);padding:12px}
+.srr{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.srr:last-child{border:none;padding-top:8px;margin-top:2px}
+.srl{font-size:11px;color:var(--muted2)}
+.srv{font-size:12px;font-weight:700;font-family:var(--mono)}
+.srv.pos{color:var(--green)}.srv.neg{color:var(--red)}
+.simtotal{background:var(--s1);border-radius:var(--rsm);padding:10px 13px;margin-top:10px;display:flex;justify-content:space-between;align-items:center;border:1px solid var(--border2)}
+.stl{font-size:12px;font-weight:700}
+.stv{font-size:22px;font-weight:800;font-family:var(--mono);letter-spacing:-.5px}
+.simbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.simbtn{border-radius:12px;padding:12px 8px;text-align:center;font-size:12px;font-weight:800;text-decoration:none;display:block;cursor:pointer;transition:transform .12s}
+.simbtn:active{transform:scale(.96)}
+.simbtn.buy{background:var(--green);color:#000}
+.simbtn.sell{background:var(--rbg);border:1px solid var(--rborder);color:var(--red)}
+
+/* ALERT OVERLAY */
+.aov{position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.7);backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;padding:20px}
+.aov.show{display:flex;animation:apop .25s ease-out}
+@keyframes apop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+.amod{background:#0a1a10;border:2px solid var(--green);border-radius:20px;padding:24px 20px;width:100%;max-width:360px;box-shadow:0 0 60px rgba(0,230,118,.2)}
+.amic{font-size:40px;text-align:center;margin-bottom:6px}
+.amt{font-size:20px;font-weight:800;color:var(--green);text-align:center;margin-bottom:4px}
+.amsub{font-size:13px;color:var(--muted2);text-align:center;margin-bottom:12px;line-height:1.5}
+.ampnl{font-size:42px;font-weight:900;font-family:var(--mono);color:var(--green);text-align:center;margin-bottom:4px;text-shadow:0 0 24px rgba(0,230,118,.5)}
+.amdet{font-size:11px;color:var(--muted2);text-align:center;margin-bottom:18px;line-height:1.6;white-space:pre-line}
+.ambtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.ambtn{border-radius:12px;padding:14px 8px;text-align:center;font-size:13px;font-weight:800;text-decoration:none;display:block;cursor:pointer;transition:transform .12s}
+.ambtn:active{transform:scale(.96)}
+.ambtn.buy{background:var(--green);color:#000}
+.ambtn.sell{background:var(--rbg);border:1px solid var(--rborder);color:var(--red)}
+.amclose{width:100%;background:var(--s2);border:1px solid var(--border2);color:var(--muted2);border-radius:12px;padding:12px;font-size:12px;font-weight:600;cursor:pointer;text-align:center;transition:background .15s}
+.amclose:active{background:var(--s3)}
+
+/* ALERTAS LOG */
+.alog{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.ali{background:var(--gbg);border:1px solid var(--gborder);border-radius:var(--r);padding:12px 14px}
+.alit{font-size:10px;color:var(--muted2);font-family:var(--mono);margin-bottom:3px}
+.alth{font-size:13px;font-weight:800;color:var(--green);margin-bottom:4px}
+.ald{font-size:11px;color:var(--text);line-height:1.5;margin-bottom:8px}
+.albtns{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.albtn{border-radius:var(--rsm);padding:9px;text-align:center;font-size:11px;font-weight:700;text-decoration:none;display:block}
+.albtn.buy{background:var(--gbg);border:1px solid var(--gborder);color:var(--green)}
+.albtn.sell{background:var(--rbg);border:1px solid var(--rborder);color:var(--red)}
+
+/* FEES */
+.fcard{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:14px;overflow-x:auto;margin-bottom:12px}
+.ftbl{width:100%;border-collapse:collapse;font-size:11px}
+.ftbl th{font-size:9px;color:var(--muted2);text-align:left;padding:4px 6px;border-bottom:1px solid var(--border);font-weight:700;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.ftbl td{padding:7px 6px;font-family:var(--mono);border-bottom:1px solid rgba(255,255,255,.025)}
+.ftbl tr:last-child td{border-bottom:none}
+.ftbl .exnm{font-family:-apple-system,'Segoe UI',sans-serif;font-weight:600}
+
+/* MISC */
+.spin{width:22px;height:22px;border:2px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:sp .8s linear infinite;margin:0 auto 10px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.ld{text-align:center;padding:28px 16px}
+.em{font-size:12px;color:var(--muted2);text-align:center;padding:22px 16px}
+
+/* INFO CARD */
+.icard{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px;font-size:12px;color:var(--muted2);line-height:1.8}
+.icard strong{color:var(--text)}
+</style>
+</head>
+<body>
+
+<!-- HDR -->
+<div class="hdr">
+  <div class="logo">
+    <div class="logo-ic">Ar</div>
+    <div><div class="logo-name">ArbitrAR</div><div class="logo-sub">Arbitraje · Tiempo real</div></div>
+  </div>
+  <div class="hdr-r">
+    <div class="ldot" id="ldot"></div>
+    <span class="cdbadge" id="cdb">—s</span>
+    <button class="hbtn" onclick="manualRefresh()" id="rbtn">↻</button>
+    <button class="hbtn" id="pbtn" onclick="toggleLoop()">⏸</button>
+  </div>
+</div>
+
+<!-- ALERT OVERLAY -->
+<div class="aov" id="aov">
+  <div class="amod">
+    <div class="amic">🚨</div>
+    <div class="amt">OPORTUNIDAD DETECTADA</div>
+    <div class="amsub" id="amroute">—</div>
+    <div class="ampnl" id="ampnl">+0.00%</div>
+    <div class="amdet" id="amdet">—</div>
+    <div class="ambtns">
+      <a class="ambtn buy" id="ambuy" href="#" onclick="openExchange(event,'ambuy')">🟢 COMPRAR AHORA</a>
+      <a class="ambtn sell" id="amsell" href="#" onclick="openExchange(event,'amsell')">🔴 VENDER AHORA</a>
+    </div>
+    <div class="amclose" onclick="closeAov()">✕ Cerrar — seguir monitoreando</div>
+  </div>
+</div>
+
+<!-- PAGE -->
+<div class="page">
+
+  <!-- CONFIG -->
+  <div class="cfg">
+    <div class="cpill"><label>Capital</label><span style="color:var(--muted2);font-size:13px">U$D</span><input type="number" id="cap" value="1000" min="10" max="999999" step="100" onchange="recalcAll()" style="width:58px"></div>
+    <div class="cpill"><label>Red</label><select id="net" onchange="recalcAll()"><option value="0.5">TRC-20·0.5</option><option value="1.0">BEP-20·1.0</option><option value="5.0">ERC-20·5.0</option><option value="0.1">SOL·0.1</option></select></div>
+    <div class="cpill"><label>Alerta %</label><input type="number" id="apct" value="0.5" min="0.1" max="20" step="0.1" style="width:38px"></div>
+  </div>
+
+  <!-- FX STRIP (always visible) -->
+  <div class="fxs">
+    <div class="fxc"><span class="fl">USD Blue</span><span class="fv" id="fx-b">—</span></div>
+    <div class="fxc"><span class="fl">USD Oficial</span><span class="fv" id="fx-o">—</span></div>
+    <div class="fxc"><span class="fl">USDT/ARS</span><span class="fv" id="fx-u">—</span></div>
+    <div class="fxc"><span class="fl">CCL</span><span class="fv" id="fx-c">—</span></div>
+    <div class="fxc"><span class="fl">BTC/USD</span><span class="fv" id="fx-btc">—</span></div>
+    <div class="fxc"><span class="fl">ETH/USD</span><span class="fv" id="fx-eth">—</span></div>
+  </div>
+
+  <!-- TAB: MERCADO -->
+  <div class="tp act" id="tp-market">
+    <div class="krow">
+      <div class="kpi g"><div class="kl">Mejor ruta neta</div><div class="kv" id="kbest">—</div><div class="ks" id="kbr">sin datos</div></div>
+      <div class="kpi b"><div class="kl">Con ganancia</div><div class="kv" id="kcount">—</div><div class="ks">de <span id="ktotal">—</span> rutas</div></div>
+      <div class="kpi y"><div class="kl">USDT/ARS</div><div class="kv" id="kusdt">—</div><div class="ks">implícito mercado</div></div>
+      <div class="kpi r"><div class="kl">Spread blue</div><div class="kv" id="kspread">—</div><div class="ks">vs oficial</div></div>
+    </div>
+    <div class="sh">Precios en vivo</div>
+    <div class="exg" id="exg"><div class="ld"><div class="spin"></div></div></div>
+    <div class="sh">Rutas de arbitraje</div>
+    <div class="oppl" id="oppl"><div class="ld"><div class="spin"></div><div style="color:var(--muted2);font-size:12px">Calculando...</div></div></div>
+  </div>
+
+  <!-- TAB: SIMULADOR -->
+  <div class="tp" id="tp-sim">
+    <div class="sh">Simulador de rentabilidad</div>
+    <div class="simcard">
+      <div class="simrow"><label>Capital (USD)</label><input type="number" id="sc" value="1000" min="10" step="100" oninput="simulate()"></div>
+      <div class="simrow"><label>Comprar en</label><select id="sb" onchange="simulate()"></select></div>
+      <div class="simrow"><label>Vender en</label><select id="ss" onchange="simulate()"></select></div>
+      <div class="simrow"><label>Red de transferencia</label><select id="sn" onchange="simulate()"><option value="0.5">TRC-20 (0.5 USDT)</option><option value="1.0">BEP-20 (1.0 USDT)</option><option value="5.0">ERC-20 (5.0 USDT)</option><option value="0.1">Solana (0.1 USDT)</option></select></div>
+      <div class="simres" id="simr"><div class="em">Esperando datos...</div></div>
+      <div class="simbtns" id="simbtns" style="display:none">
+        <a class="simbtn buy" id="sbb" href="#" onclick="openExchange(event,'sbb')">🟢 Comprar</a>
+        <a class="simbtn sell" id="sbs" href="#" onclick="openExchange(event,'sbs')">🔴 Vender</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: ALERTAS -->
+  <div class="tp" id="tp-alerts">
+    <div class="sh">Alertas disparadas</div>
+    <div class="alog" id="alog"><div class="em">Sin alertas aún. Monitoreando 24/7.</div></div>
+  </div>
+
+  <!-- TAB: INFO -->
+  <div class="tp" id="tp-info">
+    <div class="sh">Cómo abrir las apps</div>
+    <div class="icard">
+      Al tocar <strong>Comprar</strong> o <strong>Vender</strong>, el sistema intenta abrir la app instalada en tu teléfono automáticamente. Si la app <strong>no está instalada</strong>, abre la web en el navegador. Si el navegador no redirige a la app, <strong>abrí la app manualmente</strong> y navegá a la sección correspondiente.
+    </div>
+    <div class="sh">Modelo de costos</div>
+    <div class="fcard">
+      <div style="font-size:11px;color:var(--muted2);line-height:1.7;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)">
+        <strong style="color:var(--yellow)">⚠️ Importante:</strong> CriptoYa devuelve precios <strong style="color:var(--text)">totalAsk/totalBid</strong> que ya incluyen el spread del exchange. El P&L calculado refleja la diferencia real entre lo que pagás en A y lo que recibís en B, descontando solo los fees de red on-chain adicionales.
+      </div>
+      <table class="ftbl">
+        <thead><tr><th>Exchange</th><th>Spread implícito</th><th>Retiro on-chain</th></tr></thead>
+        <tbody id="ftb"></tbody>
+      </table>
+    </div>
+    <div class="sh">Fuentes de datos</div>
+    <div class="icard">
+      <div>📡 <strong>CriptoYa</strong> — Precios USDT/ARS por exchange (REST)</div>
+      <div>💲 <strong>DolarAPI</strong> — Blue, Oficial, MEP, CCL</div>
+      <div>🔌 <strong>Binance WS</strong> — BTC/USD y ETH/USD en tiempo real</div>
+      <div style="margin-top:8px;font-size:10px;color:var(--muted)">Actualización automática cada 15s. No es asesoramiento financiero.</div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<!-- BOTTOM NAV -->
+<nav class="bnav">
+  <div class="bni act" data-t="market" onclick="sw('market',this)"><div class="bnic">📊</div><div class="bnil">Mercado</div></div>
+  <div class="bni" data-t="sim" onclick="sw('sim',this)"><div class="bnic">🧮</div><div class="bnil">Simulador</div></div>
+  <div class="bni" data-t="alerts" onclick="sw('alerts',this)"><div class="bnic">🔔</div><div class="bnil" id="alerttab">Alertas</div></div>
+  <div class="bni" data-t="info" onclick="sw('info',this)"><div class="bnic">ℹ️</div><div class="bnil">Info</div></div>
+</nav>
+
+<script>
+/* ═══════════════ EXCHANGES ═══════════════
+   buyUrl / sellUrl = la URL web (fallback)
+   pkg = package Android para intent://
+   scheme = custom scheme si la app lo registra
+════════════════════════════════════════ */
+/*
+  MODELO DE COSTOS CORRECTO (2026)
+  ─────────────────────────────────────────────────────────────
+  CriptoYa devuelve totalBid y totalAsk: precios YA CON el spread
+  del exchange incluido. No se descuenta maker/taker adicional
+  sobre esos precios (sería doble conteo).
+
+  Lo que SÍ se descuenta aparte:
+    - withdrawFee: fee de red on-chain al transferir entre exchanges
+      (solo si el exchange cobra por retiro; la mayoría locales = 0)
+    - depositFee: fee por depositar ARS (la mayoría = 0 por CVU/alias)
+
+  Spread implícito estimado por exchange (ya en precio CriptoYa):
+    Binance P2P  ~1-3% (spread del vendedor P2P, variable)
+    BuenBit      ~1% compra / ~0.5% venta (confirmado 2026)
+    Lemon        ~1-1.5% spread implícito
+    SatoshiTango ~0.5% por operación
+    Ripio        ~1-1.5% spread implícito
+    LetsBit      ~0.4-0.6% (taker exchange)
+    Fiwind       ~0.1-0.2% (spread bajo, exchange con libro de órdenes)
+    Calypso      ~0.2% maker, 0.2% taker
+    AstroPay     ~1-2% spread implícito
+
+  El campo `spreadNote` es informativo para mostrar al usuario.
+  El campo `withdrawFee` es el costo REAL adicional de red (USDT).
+*/
+const EX = {
+  binance_p2p:{
+    name:'Binance P2P', short:'Binance',
+    withdrawFee:0,    // P2P local: no hay retiro on-chain entre cuentas; si transferís USDT a otro exchange sí hay fee de red
+    depositFee:0,
+    spreadNote:'spread vendedor ~1–3%',
+    cyKey:'binance',
+    buyUrl:'https://p2p.binance.com/trade/buy/USDT?fiat=ARS',
+    sellUrl:'https://p2p.binance.com/trade/sell/USDT?fiat=ARS',
+    pkg:'com.binance.dev',
+  },
+  buenbit:{
+    name:'BuenBit', short:'BuenBit',
+    withdrawFee:0,    // retiros USDT en BSC/BEP-20 sin comisión adicional
+    depositFee:0,
+    spreadNote:'~1% compra · ~0.5% venta (en precio)',
+    cyKey:'buenbit',
+    buyUrl:'https://buenbit.com',
+    sellUrl:'https://buenbit.com',
+    pkg:'com.buenbit.android',
+  },
+  letsbit:{
+    name:'LetsBit', short:'LetsBit',
+    withdrawFee:0,
+    depositFee:0,
+    spreadNote:'~0.4–0.6% taker (exchange libro órdenes)',
+    cyKey:'letsbit',
+    buyUrl:'https://letsbit.io',
+    sellUrl:'https://letsbit.io',
+    pkg:'io.letsbit.app',
+  },
+  ripio:{
+    name:'Ripio', short:'Ripio',
+    withdrawFee:0,
+    depositFee:0,
+    spreadNote:'~1–1.5% spread implícito (broker)',
+    cyKey:'ripio',
+    buyUrl:'https://exchange.ripio.com',
+    sellUrl:'https://exchange.ripio.com',
+    pkg:'com.ripio.exchange',
+  },
+  satoshitango:{
+    name:'SatoshiTango', short:'SatoshiT',
+    withdrawFee:0,    // retiros gratis en Polygon/BNB Chain
+    depositFee:0,
+    spreadNote:'~0.5% por operación (en precio)',
+    cyKey:'satoshitango',
+    buyUrl:'https://satoshitango.com',
+    sellUrl:'https://satoshitango.com',
+    pkg:'com.satoshitango.app',
+  },
+  lemon:{
+    name:'Lemon Cash', short:'Lemon',
+    withdrawFee:0,
+    depositFee:0,
+    spreadNote:'~1% compra · ~0.5% venta (en precio)',
+    cyKey:'lemoncash',
+    buyUrl:'https://lemon.me',
+    sellUrl:'https://lemon.me',
+    pkg:'com.applemoncash',
+  },
+  fiwind:{
+    name:'Fiwind', short:'Fiwind',
+    withdrawFee:0,
+    depositFee:0,
+    spreadNote:'~0.1–0.2% spread (libro órdenes, muy bajo)',
+    cyKey:'fiwind',
+    buyUrl:'https://fiwind.io',
+    sellUrl:'https://fiwind.io',
+    pkg:'io.fiwind.app',
+  },
+  astropay:{
+    name:'AstroPay', short:'AstroPay',
+    withdrawFee:0,
+    depositFee:0,
+    spreadNote:'~1–2% spread implícito',
+    cyKey:'astropay',
+    buyUrl:'https://astropay.com/wallet/exchange',
+    sellUrl:'https://astropay.com/wallet/exchange',
+    pkg:'com.astropay.app',
+  },
+};
+
+/* ═══════════════ DEEP LINK HELPER ═══════════════
+  Estrategia correcta para Android desde browser:
+  1. intent:// con package + fallback URL → Chrome abre la app si está instalada
+  2. Si no hay pkg, usar la URL web directa
+════════════════════════════════════════════════ */
+function buildLink(exId, action) {
+  const ex = EX[exId];
+  if (!ex) return '#';
+  const webUrl = action === 'buy' ? ex.buyUrl : ex.sellUrl;
+  if (!ex.pkg) return webUrl;
+  // Chrome Intent — abre app si instalada, si no va a la web
+  const encoded = encodeURIComponent(webUrl);
+  return `intent://#Intent;package=${ex.pkg};scheme=https;S.browser_fallback_url=${encoded};end`;
+}
+
+// Función para el onclick: primero intenta location.href con el intent, fallback a window.open
+function openExchange(event, elId) {
+  event.preventDefault();
+  const el = document.getElementById(elId);
+  if (!el) return;
+  const href = el.getAttribute('href');
+  if (!href || href === '#') return;
+  // En Android Chrome, location.href dispara el intent
+  window.location.href = href;
+}
+
+/* ═══════════════ ESTADO ═══════════════ */
+const S = {
+  prices:{}, fx:{}, opps:[],
+  alerts:[], akeys:new Set(),
+  running:true, ivId:null, cdId:null, cd:15,
+  ws:null, actx:null,
+  // Para los botones del modal/simulador
+  modal:{ buyId:null, sellId:null },
+  sim:{ buyId:null, sellId:null },
+};
+
+/* ═══════════════ UTILS ═══════════════ */
+const $=id=>document.getElementById(id);
+const fmtN=(n,d=0)=>n==null||isNaN(n)?'—':new Intl.NumberFormat('es-AR',{minimumFractionDigits:d,maximumFractionDigits:d}).format(n);
+const fmtA=n=>n==null||isNaN(n)?'—':'$'+fmtN(n,0);
+const fmtP=(n,d=2)=>n==null||isNaN(n)?'—':(n>=0?'+':'')+n.toFixed(d)+'%';
+const fmtU=n=>n==null||isNaN(n)?'—':'U$D '+Math.abs(n).toFixed(2);
+const nowt=()=>new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+const txt=(id,v)=>{const e=$(id);if(e)e.textContent=v};
+
+/* ═══════════════ TABS ═══════════════ */
+function sw(id,el){
+  document.querySelectorAll('.tp').forEach(p=>p.classList.remove('act'));
+  document.querySelectorAll('.bni').forEach(b=>b.classList.remove('act'));
+  $('tp-'+id).classList.add('act');
+  el.classList.add('act');
+  if(id==='sim') simulate();
+}
+
+/* ═══════════════ AUDIO ═══════════════ */
+function initAudio(){
+  if(S.actx) return S.actx;
+  try{S.actx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}
+  return S.actx;
+}
+function playAlarm(){
+  const ctx=initAudio(); if(!ctx) return;
+  const notes=[880,0,880,0,1100,0,1100,0,880,0,1320];
+  let t=ctx.currentTime;
+  notes.forEach(f=>{
+    if(!f){t+=.07;return;}
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type='square'; o.frequency.setValueAtTime(f,t);
+    g.gain.setValueAtTime(.35,t); g.gain.exponentialRampToValueAtTime(.001,t+.15);
+    o.start(t); o.stop(t+.15); t+=.18;
+  });
+  if(navigator.vibrate) navigator.vibrate([150,80,150,80,350]);
+}
+
+/* ═══════════════ FETCH ═══════════════ */
+/* Proxy CORS para evitar bloqueos del hosting */
+async function fetchDolar(){
+  try{
+    const r=await fetch('https://fanatics.com.ar/ar/proxy.php?url=' + encodeURIComponent('https://dolarapi.com/v1/dolares'));
+    if(!r.ok) throw new Error(r.status);
+    const d=await r.json();
+    const g=(casa)=>d.find(x=>x.casa===casa);
+    const bl=g('blue'),of=g('oficial'),mep=g('bolsa'),ccl=g('contadoconliqui');
+    if(bl) S.fx.blue=(bl.compra+bl.venta)/2;
+    if(of) S.fx.oficial=(of.compra+of.venta)/2;
+    if(mep) S.fx.mep=(mep.compra+mep.venta)/2;
+    if(ccl) S.fx.ccl=(ccl.compra+ccl.venta)/2;
+    S.fx.usdArs=S.fx.blue||S.fx.oficial||1550;
+    return true;
+  }catch(e){if(!S.fx.usdArs)S.fx.usdArs=1550;return false;}
+}
+
+async function fetchCY(){
+  try{
+    const r=await fetch('https://fanatics.com.ar/ar/proxy.php?url=' + encodeURIComponent('https://criptoya.com/api/usdt/ars/1'));
+    if(!r.ok) throw new Error(r.status);
+    const d=await r.json();
+    const ts=Date.now();
+    for(const [id,ex] of Object.entries(EX)){
+      const k=ex.cyKey;
+      if(d[k]){
+        const e=d[k];
+        S.prices[id]={
+          bidARS:e.totalBid??e.bid??null,
+          askARS:e.totalAsk??e.ask??null,
+          updated:ts,
+        };
+      }
+    }
+    const vals=Object.values(S.prices).filter(p=>p.askARS&&p.bidARS).map(p=>(p.askARS+p.bidARS)/2);
+    if(vals.length) S.fx.usdtArs=vals.reduce((a,b)=>a+b,0)/vals.length;
+    return true;
+  }catch(e){return false;}
+}
+
+function connectWS(){
+  if(S.ws&&S.ws.readyState<2) return;
+  try{
+    const ws=new WebSocket('wss://stream.binance.com:9443/stream?streams=btcusdt@bookTicker/ethusdt@bookTicker');
+    ws.onopen=()=>setStatus('live');
+    ws.onmessage=e=>{
+      try{const m=JSON.parse(e.data);
+        if(m.data?.s==='BTCUSDT') S.fx.btcUsd=parseFloat(m.data.a);
+        if(m.data?.s==='ETHUSDT') S.fx.ethUsd=parseFloat(m.data.a);
+      }catch{}};
+    ws.onclose=()=>setTimeout(connectWS,5000);
+    S.ws=ws;
+  }catch{}
+}
+
+/* ═══════════════ MOTOR ═══════════════ */
+function calcRoute(bId,sId,cap){
+  /*
+    MODELO CORRECTO:
+    - pb.askARS y ps.bidARS ya contienen el spread del exchange (CriptoYa totalAsk/totalBid)
+    - No se aplica maker/taker adicional sobre esos precios
+    - Sí se descuenta:
+        (A) withdrawFee del exchange de compra (retiro on-chain, si aplica)
+        (B) networkFee: costo de la red blockchain seleccionada por el usuario
+        (C) depositFee del exchange de venta (si cobra por depósito)
+    - El P&L resultante es el spread NETO real entre bid destino y ask origen
+  */
+  const pb=S.prices[bId],ps=S.prices[sId];
+  if(!pb?.askARS||!ps?.bidARS) return null;
+  const eb=EX[bId],es=EX[sId];
+  const networkFee=parseFloat($('net')?.value||0.5); // en USDT
+  const usdArs=S.fx.usdArs||1550;
+  const capARS=cap*usdArs;
+
+  // Cuántos USDT compramos al ask (precio ya con spread)
+  const unitsBought = capARS / pb.askARS;
+
+  // Descontamos fees de transferencia on-chain (en USDT)
+  // withdrawFee del origen + networkFee seleccionada + depositFee del destino
+  const totalNetworkCost = (eb.withdrawFee||0) + networkFee + (es.depositFee||0);
+  const unitsNet = unitsBought - totalNetworkCost;
+  if(unitsNet <= 0) return null;
+
+  // Ingreso por venta al bid (precio ya con spread del destino)
+  const revenueARS = unitsNet * ps.bidARS;
+  const pARS = revenueARS - capARS;
+  const pPct = (pARS / capARS) * 100;
+  const pUSD = pARS / usdArs;
+  const pUSDT = pUSD; // USDT ≈ USD
+
+  // Spread bruto entre precios (antes de fees de red)
+  const spreadBruto = ((ps.bidARS - pb.askARS) / pb.askARS) * 100;
+
+  return{
+    bId,sId,pPct,pARS,pUSD,pUSDT,
+    askARS:pb.askARS, bidARS:ps.bidARS,
+    spreadBruto, unitsNet, unitsBought,
+    totalNetworkCost, networkFee,
+  };
+}
+
+function computeAll(){
+  const cap=parseFloat($('cap')?.value||1000);
+  const ids=Object.keys(EX);
+  const opps=[];
+  for(const b of ids) for(const s of ids){
+    if(b===s) continue;
+    const r=calcRoute(b,s,cap);
+    if(r) opps.push(r);
+  }
+  opps.sort((a,b)=>b.pPct-a.pPct);
+  S.opps=opps;
+}
+
+/* ═══════════════ RENDER FX + KPI ═══════════════ */
+function renderFX(){
+  txt('fx-b',S.fx.blue?fmtA(S.fx.blue):'—');
+  txt('fx-o',S.fx.oficial?fmtA(S.fx.oficial):'—');
+  txt('fx-u',S.fx.usdtArs?fmtA(S.fx.usdtArs):'—');
+  txt('fx-c',S.fx.ccl?fmtA(S.fx.ccl):'—');
+  txt('fx-btc',S.fx.btcUsd?'$'+fmtN(S.fx.btcUsd,0):'—');
+  txt('fx-eth',S.fx.ethUsd?'$'+fmtN(S.fx.ethUsd,0):'—');
+}
+function renderKPI(){
+  const best=S.opps[0];
+  const pos=S.opps.filter(o=>o.pPct>0).length;
+  if(best){txt('kbest',fmtP(best.pPct));txt('kbr',`${EX[best.bId].short} → ${EX[best.sId].short}`);}
+  else{txt('kbest','—');txt('kbr','sin datos');}
+  txt('kcount',pos); txt('ktotal',S.opps.length);
+  txt('kusdt',S.fx.usdtArs?fmtA(S.fx.usdtArs):'—');
+  if(S.fx.blue&&S.fx.oficial) txt('kspread','+'+((S.fx.blue/S.fx.oficial-1)*100).toFixed(1)+'%');
+}
+
+/* ═══════════════ RENDER EXCHANGES ═══════════════ */
+function renderExchanges(){
+  const now=Date.now();
+  const html=Object.entries(EX).map(([id,ex])=>{
+    const p=S.prices[id]||{};
+    const age=p.updated?Math.round((now-p.updated)/1000):null;
+    const ok=age!==null&&age<90;
+    const sp=p.askARS&&p.bidARS?((p.bidARS-p.askARS)/p.askARS*100).toFixed(2):null;
+    const fr=age!==null&&age<5;
+    const buyHref=buildLink(id,'buy');
+    const sellHref=buildLink(id,'sell');
+    return `<div class="exc${!ok?' nd':''}${fr?' fresh':''}">
+      <div class="exh">
+        <div class="exlr"><div class="exdot ${ok?'ok':'nd'}"></div><span class="exn">${ex.short}</span></div>
+        <span class="exsrc ${ok?'rest':'nd'}">${ok?'LIVE':'sin datos'}</span>
+      </div>
+      <div class="exprow"><span class="eplbl">Bid (vende)</span><span class="epval bid">${p.bidARS?fmtA(p.bidARS):'—'}</span></div>
+      <div class="exprow"><span class="eplbl">Ask (compra)</span><span class="epval ask">${p.askARS?fmtA(p.askARS):'—'}</span></div>
+      ${sp?`<div class="exspread">Spread local: ${sp}%</div>`:''}
+      <div class="exacts">
+        <a class="exabt buy" href="${buyHref}" onclick="openExchange(event,this)">🟢 Comprar</a>
+        <a class="exabt sell" href="${sellHref}" onclick="openExchange(event,this)">🔴 Vender</a>
+      </div>
+      <div class="exupd">${age!==null?`Hace ${age}s`:'Sin datos'}</div>
+    </div>`;
+  }).join('');
+  $('exg').innerHTML=html;
+}
+
+/* ═══════════════ RENDER OPPS ═══════════════ */
+function renderOpps(){
+  const thr=parseFloat($('apct')?.value||.5);
+  if(!S.opps.length){
+    $('oppl').innerHTML='<div class="ld"><div class="spin"></div><div style="color:var(--muted2);font-size:12px">Calculando rutas...</div></div>';return;}
+  const html=S.opps.slice(0,24).map(o=>{
+    const be=EX[o.bId],se=EX[o.sId];
+    const ip=o.pPct>=thr, in_=o.pPct>0&&o.pPct<thr;
+    const pc=ip?'pos':in_?'near':'neg';
+    const cc=ip?'profit':in_?'near':'';
+    const sg=o.pPct>=0?'+':'−';
+    const buyHref=buildLink(o.bId,'buy');
+    const sellHref=buildLink(o.sId,'sell');
+    return `<div class="oppc ${cc}">
+      <div class="oppt">
+        <div class="oppr">
+          <span class="oppex">${be.short}</span><span class="opparr">→</span><span class="oppex">${se.short}</span>
+        </div>
+        <span class="opppnl ${pc}">${fmtP(o.pPct)}</span>
+      </div>
+      <div class="oppdet">
+        <div class="opdd"><div class="oddl">Ask compra</div><div class="oddv">${fmtA(o.askARS)}</div></div>
+        <div class="opdd"><div class="oddl">Bid venta</div><div class="oddv">${fmtA(o.bidARS)}</div></div>
+        <div class="opdd"><div class="oddl">Spread bruto</div><div class="oddv ${o.spreadBruto>=0?'pos':'neg'}">${o.spreadBruto>=0?'+':''}${o.spreadBruto.toFixed(2)}%</div></div>
+        <div class="opdd"><div class="oddl">Gan. ARS</div><div class="oddv ${o.pPct>=0?'pos':'neg'}">${sg}${fmtA(Math.abs(o.pARS))}</div></div>
+        <div class="opdd"><div class="oddl">Gan. USD</div><div class="oddv ${o.pPct>=0?'pos':'neg'}">${sg}${fmtU(o.pUSD)}</div></div>
+        <div class="opdd"><div class="oddl">USDT netos</div><div class="oddv">${o.unitsNet.toFixed(1)}</div></div>
+      </div>
+      <div class="oppacts">
+        <a class="opabt buy" href="${buyHref}" onclick="openExchange(event,this)">🟢 Comprar<br><span style="font-size:9px;font-weight:400">${be.short}</span></a>
+        <a class="opabt sell" href="${sellHref}" onclick="openExchange(event,this)">🔴 Vender<br><span style="font-size:9px;font-weight:400">${se.short}</span></a>
+        <div class="opabt sig" onclick="copySignal('${o.bId}','${o.sId}')">📋 Señal<br><span style="font-size:9px;font-weight:400">Copiar</span></div>
+      </div>
+    </div>`;
+  }).join('');
+  $('oppl').innerHTML=html;
+}
+
+/* ═══════════════ OPEN EXCHANGE (unified handler) ═══════════════ */
+function openExchange(event, elOrId) {
+  event.preventDefault();
+  const el = typeof elOrId === 'string' ? $(elOrId) : elOrId;
+  if (!el) return;
+  const href = el.getAttribute('href');
+  if (!href || href === '#') return;
+  // Intentar abrir con location.href (funciona para intent:// en Chrome Android)
+  try { window.location.href = href; } catch(e) { window.open(href,'_blank'); }
+}
+
+/* ═══════════════ ALERTAS ═══════════════ */
+function checkAlerts(){
+  const thr=parseFloat($('apct')?.value||.5);
+  const cap=parseFloat($('cap')?.value||1000);
+  S.opps.filter(o=>o.pPct>=thr).forEach(o=>{
+    const k=`${o.bId}-${o.sId}-${Math.floor(o.pPct*10)}`;
+    if(S.akeys.has(k)) return;
+    S.akeys.add(k);
+    setTimeout(()=>S.akeys.delete(k),120000);
+    fireAlert(o,cap);
+  });
+}
+
+function fireAlert(o,cap){
+  const be=EX[o.bId],se=EX[o.sId];
+  playAlarm();
+  // Modal
+  txt('amroute',`${be.name} → ${se.name}`);
+  txt('ampnl',fmtP(o.pPct));
+  $('amdet').textContent=`Comprar en ${be.name} @ ${fmtA(o.askARS)}\nTransferir · Vender en ${se.name} @ ${fmtA(o.bidARS)}\nCapital U$D ${cap} → Ganancia ${fmtA(o.pARS)} ARS`;
+  // Guardar hrefs en los botones del modal
+  const buyH=buildLink(o.bId,'buy'), sellH=buildLink(o.sId,'sell');
+  $('ambuy').href=buyH; $('amsell').href=sellH;
+  $('aov').classList.add('show');
+  // Notificación del sistema
+  if(Notification?.permission==='granted'){
+    const n=new Notification('🚨 ArbitrAR — OPORTUNIDAD',{
+      body:`${be.name} → ${se.name}\n${fmtP(o.pPct)} neto | ${fmtA(o.pARS)} ARS`,
+      requireInteraction:true,
+    });
+    n.onclick=()=>{window.focus();$('aov').classList.add('show');};
+  }
+  // Log
+  addAlertLog(o,cap,be,se);
+}
+
+function closeAov(){ $('aov').classList.remove('show'); }
+
+function addAlertLog(o,cap,be,se){
+  const log=$('alog');
+  if(log.querySelector('.em')) log.innerHTML='';
+  const d=document.createElement('div');
+  d.className='ali';
+  const buyH=buildLink(o.bId,'buy'), sellH=buildLink(o.sId,'sell');
+  d.innerHTML=`<div class="alit">${nowt()}</div>
+    <div class="alth">+${o.pPct.toFixed(2)}% — ${be.short} → ${se.short}</div>
+    <div class="ald">Comprar @ ${fmtA(o.askARS)} · Vender @ ${fmtA(o.bidARS)}<br>Ganancia: ${fmtA(o.pARS)} ARS · ${fmtU(o.pUSD)}</div>
+    <div class="albtns">
+      <a class="albtn buy" href="${buyH}" onclick="openExchange(event,this)">🟢 Comprar en ${be.short}</a>
+      <a class="albtn sell" href="${sellH}" onclick="openExchange(event,this)">🔴 Vender en ${se.short}</a>
+    </div>`;
+  log.insertBefore(d,log.firstChild);
+  // Badge en tab
+  $('alerttab').style.color='var(--green)';
+}
+
+/* ═══════════════ SIMULADOR ═══════════════ */
+function populateSim(){
+  const opts=Object.entries(EX).map(([id,ex])=>`<option value="${id}">${ex.name}</option>`).join('');
+  $('sb').innerHTML=opts; $('ss').innerHTML=opts;
+  $('ss').value='buenbit';
+}
+
+function simulate(){
+  const bId=$('sb')?.value, sId=$('ss')?.value;
+  const cap=parseFloat($('sc')?.value||1000);
+  const nf=parseFloat($('sn')?.value||.5);
+  const el=$('simr'), btns=$('simbtns');
+  if(bId===sId){el.innerHTML='<div class="em" style="color:var(--red)">Seleccioná exchanges distintos.</div>';btns.style.display='none';return;}
+  const pb=S.prices[bId],ps=S.prices[sId];
+  if(!pb?.askARS||!ps?.bidARS){el.innerHTML='<div class="em">Esperando datos de mercado...</div>';btns.style.display='none';return;}
+  const eb=EX[bId],es=EX[sId];
+  const usdArs=S.fx.usdArs||1550;
+  const capARS=cap*usdArs;
+  // Modelo correcto: totalAsk/totalBid ya incluye spread del exchange
+  const ub=capARS/pb.askARS;
+  const totalNetCost=(eb.withdrawFee||0)+nf+(es.depositFee||0);
+  const un=Math.max(0,ub-totalNetCost);
+  const revARS=un*ps.bidARS;
+  const pARS=revARS-capARS, pPct=(pARS/capARS)*100, pUSD=pARS/usdArs;
+  const cls=pPct>0?'pos':'neg';
+  const sg=pPct>=0?'+':'−';
+  el.innerHTML=`
+    <div class="srr" style="opacity:.6;font-size:10px;padding:3px 0 7px"><span class="srl" style="font-style:italic">Spread ${eb.short}: ${eb.spreadNote}</span><span class="srl" style="font-style:italic">incluido en precio</span></div>
+    <div class="srr"><span class="srl">Ask compra (${eb.name})</span><span class="srv">${fmtA(pb.askARS)}</span></div>
+    <div class="srr"><span class="srl">USDT a comprar</span><span class="srv">${ub.toFixed(2)} USDT</span></div>
+    <div class="srr"><span class="srl">− Fee retiro ${eb.short}</span><span class="srv ${eb.withdrawFee?'neg':'pos'}">${eb.withdrawFee?'−'+eb.withdrawFee+' USDT':'Sin cargo'}</span></div>
+    <div class="srr"><span class="srl">− Fee red blockchain</span><span class="srv neg">−${nf} USDT (−${fmtA(nf*pb.askARS)})</span></div>
+    <div class="srr"><span class="srl">− Fee depósito ${es.short}</span><span class="srv ${es.depositFee?'neg':'pos'}">${es.depositFee?'−'+es.depositFee+' USDT':'Sin cargo'}</span></div>
+    <div class="srr"><span class="srl">USDT netos a vender</span><span class="srv">${un.toFixed(2)} USDT</span></div>
+    <div class="srr" style="opacity:.6;font-size:10px;padding:3px 0 7px"><span class="srl" style="font-style:italic">Spread ${es.short}: ${es.spreadNote}</span><span class="srl" style="font-style:italic">incluido en precio</span></div>
+    <div class="srr"><span class="srl">Bid venta (${es.name})</span><span class="srv">${fmtA(ps.bidARS)}</span></div>
+    <div class="srr"><span class="srl">Ingreso bruto ARS</span><span class="srv">${fmtA(revARS)}</span></div>
+    <div class="srr"><span class="srl">Capital invertido</span><span class="srv">−${fmtA(capARS)}</span></div>
+    <div class="srr"><span class="srl">Gan. ARS</span><span class="srv ${cls}">${sg}${fmtA(Math.abs(pARS))}</span></div>
+    <div class="srr"><span class="srl">Gan. USD</span><span class="srv ${cls}">${sg}${fmtU(pUSD)}</span></div>`;
+  $('simtotal')?.remove();
+  const tot=document.createElement('div');
+  tot.className='simtotal';tot.id='simtotal';
+  tot.innerHTML=`<div><div class="stl">P&L NETO</div><div style="font-size:10px;color:var(--muted2)">${sg}${fmtA(Math.abs(pARS))} · ${sg}${fmtU(pUSD)}</div></div><div class="stv ${cls}">${sg}${Math.abs(pPct).toFixed(2)}%</div>`;
+  el.parentNode.insertBefore(tot,btns);
+  // Actualizar hrefs de los botones
+  $('sbb').href=buildLink(bId,'buy');
+  $('sbs').href=buildLink(sId,'sell');
+  btns.style.display='grid';
+  // Texto de los botones
+  $('sbb').innerHTML=`🟢 Comprar en ${eb.short}`;
+  $('sbs').innerHTML=`🔴 Vender en ${es.short}`;
+}
+
+/* ═══════════════ SEÑAL ═══════════════ */
+function copySignal(bId,sId){
+  const o=S.opps.find(x=>x.bId===bId&&x.sId===sId); if(!o) return;
+  const be=EX[bId],se=EX[sId],cap=$('cap')?.value||1000;
+  const net=document.getElementById('net');
+  const netTxt=net?.options[net.selectedIndex]?.text||'TRC-20 (0.5 USDT)';
+  const t=`🚨 SEÑAL — ArbitrAR\n\n✅ P&L neto: ${fmtP(o.pPct)}\n   (spread implícito en precios: ${be.spreadNote} / ${se.spreadNote})\n\n1️⃣ COMPRAR en ${be.name}\n   ${be.buyUrl}\n   Precio ask: ${fmtA(o.askARS)}/USDT\n   USDT a recibir: ${o.unitsBought.toFixed(2)}\n\n2️⃣ TRANSFERIR vía ${netTxt}\n   Costo total de red: ${o.totalNetworkCost.toFixed(2)} USDT\n   USDT netos: ${o.unitsNet.toFixed(2)}\n\n3️⃣ VENDER en ${se.name}\n   ${se.sellUrl}\n   Precio bid: ${fmtA(o.bidARS)}/USDT\n\n💰 Capital: U$D ${cap}\n📈 Ganancia: ${fmtA(o.pARS)} ARS · ${fmtU(o.pUSD)}\n\n⚠️ Los precios incluyen spread del exchange. Verificar antes de operar.`;
+  navigator.clipboard?.writeText(t).catch(()=>{});
+}
+
+/* ═══════════════ FEES TABLE ═══════════════ */
+function renderFees(){
+  $('ftb').innerHTML=Object.entries(EX).map(([,e])=>
+    `<tr><td class="exnm">${e.name}</td><td style="font-size:10px;color:var(--muted2)">${e.spreadNote}</td><td>${e.withdrawFee?e.withdrawFee+' USDT':'—'}</td></tr>`
+  ).join('');
+}
+
+/* ═══════════════ STATUS ═══════════════ */
+function setStatus(m){
+  const d=$('ldot'),pb=$('pbtn');
+  if(m==='live'){d.style.background='var(--green)';d.style.boxShadow='0 0 8px var(--green)';d.classList.add('on');}
+  if(m==='upd'){d.style.background='var(--yellow)';d.style.boxShadow='0 0 8px var(--yellow)';}
+  if(m==='paused'){d.style.background='var(--muted)';d.style.boxShadow='none';d.classList.remove('on');txt('cdb','—');}
+  if(m==='err'){d.style.background='var(--red)';d.style.boxShadow='0 0 8px var(--red)';}
+}
+
+/* ═══════════════ LOOP ═══════════════ */
+async function runCycle(){
+  setStatus('upd');
+  await Promise.all([fetchDolar(),fetchCY()]);
+  computeAll();
+  renderFX(); renderKPI(); renderExchanges(); renderOpps();
+  checkAlerts(); simulate();
+  setStatus('live');
+
+}
+
+function startLoop(){
+  runCycle();
+  S.ivId=setInterval(runCycle,15000);
+  S.cd=15; txt('cdb','15s');
+  clearInterval(S.cdId);
+  S.cdId=setInterval(()=>{S.cd--;txt('cdb',S.cd+'s');if(S.cd<=0)S.cd=15;},1000);
+}
+
+function toggleLoop(){
+  const b=$('pbtn');
+  if(S.running){
+    clearInterval(S.ivId);clearInterval(S.cdId);
+    S.running=false;b.textContent='▶';b.classList.add('pause');setStatus('paused');
+  }else{
+    S.running=true;b.textContent='⏸';b.classList.remove('pause');startLoop();
+  }
+}
+
+async function manualRefresh(){
+  const b=$('rbtn');b.textContent='…';b.disabled=true;
+  await runCycle();
+  if(S.running){clearInterval(S.ivId);clearInterval(S.cdId);S.ivId=setInterval(runCycle,15000);S.cd=15;S.cdId=setInterval(()=>{S.cd--;txt('cdb',S.cd+'s');if(S.cd<=0)S.cd=15;},1000);}
+  b.textContent='↻';b.disabled=false;
+}
+
+function recalcAll(){ computeAll();renderKPI();renderOpps();simulate(); }
+
+populateSim();
+renderFees();
+connectWS();
+startLoop();
+</script>
+</body>
+</html>
