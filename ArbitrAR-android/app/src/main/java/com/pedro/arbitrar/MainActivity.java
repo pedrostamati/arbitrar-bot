@@ -49,6 +49,9 @@ public class MainActivity extends AppCompatActivity {
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
+        settings.setLoadWithOverviewMode(true);
+        settings.setUseWideViewPort(true);
+        settings.setBuiltInZoomControls(false);
         settings.setAllowFileAccess(true);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         settings.setMediaPlaybackRequiresUserGesture(false);
@@ -66,7 +69,8 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
-
+webView.setBackgroundColor(0x00000000);
+if (Build.VERSION.SDK_INT >= 19) WebView.setWebContentsDebuggingEnabled(true);
         webView.loadUrl("https://fanatics.com.ar/ar/arbitraje.html");
     }
 
