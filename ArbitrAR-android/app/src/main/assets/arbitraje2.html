@@ -1,0 +1,3249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0c12">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>ArbitrAR</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='32' fill='%230a0c12'/><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23448aff'/><stop offset='1' stop-color='%23b388ff'/></linearGradient></defs><rect x='24' y='24' width='144' height='144' rx='24' fill='url(%23g)'/><text x='96' y='126' font-family='system-ui' font-weight='800' font-size='80' fill='white' text-anchor='middle'>Ar</text></svg>">
+<style>
+:root{
+  --bg:#0a0c12;--s1:#111420;--s2:#181c2e;--s3:#1e2338;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.13);
+  --text:#e8eaf2;--muted:#5a607a;--muted2:#8890aa;
+  --green:#00e676;--green2:#00c853;--gbg:rgba(0,230,118,0.08);--gborder:rgba(0,230,118,0.22);
+  --red:#ff5252;--rbg:rgba(255,82,82,0.08);--rborder:rgba(255,82,82,0.22);
+  --yellow:#ffd740;--ybg:rgba(255,215,64,0.08);--yborder:rgba(255,215,64,0.22);
+  --blue:#448aff;--bbg:rgba(68,138,255,0.08);--bborder:rgba(68,138,255,0.22);
+  --purple:#b388ff;--pbg:rgba(179,136,255,0.08);--pborder:rgba(179,136,255,0.22);
+  --orange:#ff9100;--obg:rgba(255,145,0,0.08);--oborder:rgba(255,145,0,0.22);
+  --teal:#00bcd4;--tbg:rgba(0,188,212,0.08);--tborder:rgba(0,188,212,0.22);
+  --r:14px;--rsm:8px;--mono:'SF Mono','Fira Code',monospace;
+  --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI',sans-serif;font-size:14px}
+body{min-height:100dvh;padding-top:var(--st);padding-bottom:calc(var(--sb) + 62px)}
+
+/* HDR */
+.hdr{position:sticky;top:var(--st);z-index:100;background:rgba(10,12,18,0.94);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.logo{display:flex;align-items:center;gap:8px}
+.logo-ic{width:30px;height:30px;background:linear-gradient(135deg,#448aff,#b388ff);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0}
+.logo-name{font-size:16px;font-weight:700;letter-spacing:-.5px}
+.logo-sub{font-size:10px;color:var(--muted2);line-height:1}
+.hdr-r{display:flex;align-items:center;gap:6px}
+.ldot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);flex-shrink:0}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:.3}}
+.ldot.on{animation:bl 1.5s infinite}
+.hbtn{background:var(--s2);border:1px solid var(--border2);color:var(--text);border-radius:8px;padding:6px 11px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap}
+.hbtn.pause{background:var(--rbg);border-color:var(--rborder);color:var(--red)}
+.cdbadge{font-size:10px;color:var(--muted2);font-family:var(--mono);min-width:22px;text-align:center}
+
+/* PAGE */
+.page{padding:12px 12px 0}
+
+/* CFG */
+.cfg{display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.cfg::-webkit-scrollbar{display:none}
+.cpill{background:var(--s1);border:1px solid var(--border2);border-radius:24px;padding:6px 13px;display:flex;align-items:center;gap:6px;white-space:nowrap;flex-shrink:0}
+.cpill label{font-size:10px;color:var(--muted2)}
+.cpill input,.cpill select{background:transparent;border:none;color:var(--text);font-size:13px;font-weight:700;font-family:var(--mono);outline:none;cursor:pointer}
+
+/* FX */
+.fxs{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none}
+.fxs::-webkit-scrollbar{display:none}
+.fxc{background:var(--s1);border:1px solid var(--border);border-radius:20px;padding:5px 11px;white-space:nowrap;flex-shrink:0}
+.fxc .fl{font-size:9px;color:var(--muted2);display:block;line-height:1;margin-bottom:2px}
+.fxc .fv{font-size:12px;font-weight:700;font-family:var(--mono)}
+
+/* COIN TABS */
+.ctabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;margin-bottom:14px}
+.ctab{background:var(--s1);border:1px solid var(--border2);border-radius:12px;padding:8px 2px 7px;min-width:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font-family:var(--mono);color:var(--muted2);transition:all .15s}
+.ctab .ctn{font-size:11.5px;font-weight:700;line-height:1}
+.ctab .ctp{font-size:10px;font-weight:700;line-height:1;white-space:nowrap;letter-spacing:-.3px}
+.ctab .ctp.pos{color:var(--green)}.ctab .ctp.near{color:var(--yellow)}.ctab .ctp.neg{color:var(--red)}.ctab .ctp.none{color:var(--muted)}
+.ctab.act{color:#fff;border-color:transparent}
+.ctab[data-coin="usdt"].act{background:linear-gradient(135deg,#1b4a1f,#0f3a13);border-color:rgba(0,230,118,.4);color:var(--green)}
+.ctab[data-coin="usdc"].act{background:linear-gradient(135deg,#1a2a4a,#0f1e38);border-color:rgba(68,138,255,.4);color:var(--blue)}
+.ctab[data-coin="dai"].act{background:linear-gradient(135deg,#3a2a0a,#2a1e05);border-color:rgba(255,215,64,.4);color:var(--yellow)}
+.ctab[data-coin="btc"].act{background:linear-gradient(135deg,#3a1e0a,#2a1505);border-color:rgba(255,145,0,.4);color:var(--orange)}
+.ctab[data-coin="eth"].act{background:linear-gradient(135deg,#2a1a3a,#1e1028);border-color:rgba(179,136,255,.4);color:var(--purple)}
+
+/* KPI */
+.krow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.kpi{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:12px 13px}
+.kl{font-size:10px;color:var(--muted2);margin-bottom:4px}
+.kv{font-size:20px;font-weight:800;font-family:var(--mono);letter-spacing:-.5px;line-height:1}
+.ks{font-size:10px;color:var(--muted);margin-top:3px}
+.kpi.g .kv{color:var(--green)}.kpi.r .kv{color:var(--red)}.kpi.b .kv{color:var(--blue)}.kpi.y .kv{color:var(--yellow)}
+.kpi .kv.pos{color:var(--green)}.kpi .kv.near{color:var(--yellow)}.kpi .kv.neg{color:var(--red)}.kpi .kv.none{color:var(--muted2)}
+
+/* SECHDR */
+.sh{font-size:10px;font-weight:700;color:var(--muted2);letter-spacing:1px;text-transform:uppercase;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+.sh::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* PRICE TABLE */
+.ptbl-wrap{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);overflow-x:auto;overflow-y:hidden;margin-bottom:16px}
+.ptbl{width:100%;border-collapse:collapse;font-size:12px}
+.ptbl th{font-size:9px;color:var(--muted2);text-align:left;padding:8px 4px;border-bottom:1px solid var(--border2);font-weight:700;text-transform:uppercase;letter-spacing:.2px;white-space:nowrap;cursor:pointer;user-select:none;background:var(--s2);transition:color .15s}
+.ptbl th:hover{color:var(--text)}
+.ptbl th.sorted{color:var(--blue)}
+.ptbl th .sar{display:inline-block;margin-left:2px;font-size:9px;opacity:.6}
+.ptbl th.sorted .sar{opacity:1;color:var(--blue)}
+.ptbl td{padding:8px 4px;border-bottom:1px solid rgba(255,255,255,.025);vertical-align:middle}
+.ptbl th:first-child,.ptbl td:first-child{padding-left:8px}
+.ptbl th:last-child,.ptbl td:last-child{padding-right:6px}
+.ptbl tr:last-child td{border-bottom:none}
+.ptbl tr.nd td{opacity:.45}
+.ptbl .exnm{font-weight:700;font-size:12px;white-space:nowrap}
+.ptbl .exsub{font-size:9px;color:var(--muted);margin-top:3px;white-space:nowrap}
+.ptbl .live-badge{font-size:8px;padding:1px 4px;border-radius:5px;font-weight:700;background:var(--gbg);border:1px solid var(--gborder);color:var(--green);margin-right:4px;vertical-align:middle}
+.ptbl .no-badge{font-size:8px;padding:1px 4px;border-radius:5px;font-weight:700;background:var(--s3);border:1px solid var(--border);color:var(--muted);margin-right:4px;vertical-align:middle}
+.ptbl .old-badge{font-size:8px;padding:1px 4px;border-radius:5px;font-weight:700;background:var(--ybg);border:1px solid var(--yborder);color:var(--yellow);margin-right:4px;vertical-align:middle}
+.ptbl-foot{font-size:10px;color:var(--muted2);padding:8px 10px;border-top:1px solid var(--border);line-height:1.5}
+.diag{display:none;font-size:11px;color:var(--yellow);background:var(--ybg);border:1px solid var(--yborder);border-radius:var(--rsm);padding:9px 11px;margin-bottom:10px;line-height:1.6}
+.diag.show{display:block}
+.ptbl .pbid{color:var(--red);font-weight:700;font-family:var(--mono);font-size:11.5px;white-space:nowrap}
+.ptbl .pask{color:var(--green);font-weight:700;font-family:var(--mono);font-size:11.5px;white-space:nowrap}
+.ptbl .pspread{font-family:var(--mono);font-size:11px;white-space:nowrap}
+.ptbl .pspread.pos{color:var(--green)}.ptbl .pspread.neg{color:var(--red)}.ptbl .pspread.neu{color:var(--muted2)}
+.ptbl-acts{display:flex;flex-direction:column;gap:3px}
+.ptbl-act{border-radius:6px;padding:4px 4px;font-size:9px;font-weight:800;cursor:pointer;border:1px solid;background:transparent;line-height:1;white-space:nowrap}
+.ptbl-act.buy{color:var(--green);border-color:var(--gborder)}
+.ptbl-act.buy:active{background:var(--gbg)}
+.ptbl-act.sell{color:var(--red);border-color:var(--rborder)}
+.ptbl-act.sell:active{background:var(--rbg)}
+
+/* OPP LIST */
+.oppl{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.oppc{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;transition:border-color .2s}
+.oppc.profit{border-color:var(--gborder);background:linear-gradient(135deg,var(--s1),rgba(0,230,118,.04))}
+.oppc.near{border-color:var(--yborder)}
+.oppc.suspect{border-color:var(--rborder);opacity:.7}
+.oppflag{font-size:8px;font-weight:800;padding:2px 6px;border-radius:6px;background:var(--rbg);border:1px solid var(--rborder);color:var(--red);white-space:nowrap}
+.oppnet{font-size:10px;color:var(--muted2);line-height:1.5;margin-bottom:10px}
+.oppnet b{color:var(--text);font-weight:700}
+.oppt{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.oppr{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.oppex{font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;background:var(--s2);border:1px solid var(--border2);white-space:nowrap}
+.opparr{font-size:12px;color:var(--muted2)}
+.opppnl{font-size:18px;font-weight:800;font-family:var(--mono);letter-spacing:-.5px}
+.opppnl.pos{color:var(--green)}.opppnl.neg{color:var(--red)}.opppnl.near{color:var(--yellow)}
+.oppdet{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:10px}
+.opdd{background:var(--s2);border-radius:var(--rsm);padding:6px 7px;text-align:center}
+.oddl{font-size:9px;color:var(--muted2);margin-bottom:2px}
+.oddv{font-size:11px;font-weight:700;font-family:var(--mono)}
+.oddv.pos{color:var(--green)}.oddv.neg{color:var(--red)}
+.oppacts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.opabt{border-radius:var(--rsm);padding:9px 4px;text-align:center;font-size:10px;font-weight:800;text-decoration:none;display:block;cursor:pointer;transition:transform .12s;line-height:1.3}
+.opabt:active{transform:scale(.96)}
+.opabt.buy{background:var(--gbg);border:1px solid var(--gborder);color:var(--green)}
+.opabt.sell{background:var(--rbg);border:1px solid var(--rborder);color:var(--red)}
+.opabt.sig{background:var(--bbg);border:1px solid var(--bborder);color:var(--blue)}
+
+/* BOTTOM NAV */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,12,18,.96);backdrop-filter:blur(18px);border-top:1px solid var(--border);display:flex;padding:8px 0 calc(8px + var(--sb));z-index:200}
+.bni{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;opacity:.45;transition:opacity .15s;padding:4px 0}
+.bni.act{opacity:1}
+.bnic{font-size:20px;line-height:1}
+.bnil{font-size:9px;font-weight:600;white-space:nowrap}
+.bni.act .bnil{color:var(--blue)}
+
+/* TAB PANELS */
+.tp{display:none}.tp.act{display:block}
+
+/* SIMULADOR */
+.simcard{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.simrow{margin-bottom:10px}
+.simrow label{font-size:10px;color:var(--muted2);display:block;margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.simrow select,.simrow input{width:100%;background:var(--s2);border:1px solid var(--border2);color:var(--text);border-radius:var(--rsm);padding:10px 12px;font-size:14px;font-family:var(--mono);font-weight:700;outline:none;appearance:none}
+.simrow select:focus,.simrow input:focus{border-color:var(--blue)}
+.simres{background:var(--s2);border-radius:var(--rsm);border:1px solid var(--border);padding:12px}
+.srr{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.srr:last-child{border:none;padding-top:8px;margin-top:2px}
+.srl{font-size:11px;color:var(--muted2)}
+.srv{font-size:12px;font-weight:700;font-family:var(--mono)}
+.srv.pos{color:var(--green)}.srv.neg{color:var(--red)}
+.srw{font-size:11px;color:var(--yellow);background:var(--ybg);border:1px solid var(--yborder);border-radius:var(--rsm);padding:8px 10px;margin-bottom:8px;line-height:1.5}
+.simtotal{background:var(--s1);border-radius:var(--rsm);padding:10px 13px;margin-top:10px;display:flex;justify-content:space-between;align-items:center;border:1px solid var(--border2)}
+.stl{font-size:12px;font-weight:700}
+.stv{font-size:22px;font-weight:800;font-family:var(--mono);letter-spacing:-.5px}
+.stv.pos{color:var(--green)}.stv.neg{color:var(--red)}
+.simbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.simbtn{border-radius:12px;padding:12px 8px;text-align:center;font-size:12px;font-weight:800;text-decoration:none;display:block;cursor:pointer;transition:transform .12s}
+.simbtn:active{transform:scale(.96)}
+.simbtn.buy{background:var(--green);color:#000}
+.simbtn.sell{background:var(--rbg);border:1px solid var(--rborder);color:var(--red)}
+
+/* ALERT OVERLAY */
+.aov{position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.7);backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;padding:20px}
+.aov.show{display:flex;animation:apop .25s ease-out}
+@keyframes apop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+.amod{background:#0a1a10;border:2px solid var(--green);border-radius:20px;padding:24px 20px;width:100%;max-width:360px;box-shadow:0 0 60px rgba(0,230,118,.2)}
+.amic{font-size:40px;text-align:center;margin-bottom:6px}
+.amt{font-size:20px;font-weight:800;color:var(--green);text-align:center;margin-bottom:4px}
+.amsub{font-size:13px;color:var(--muted2);text-align:center;margin-bottom:12px;line-height:1.5}
+.ampnl{font-size:42px;font-weight:900;font-family:var(--mono);color:var(--green);text-align:center;margin-bottom:4px;text-shadow:0 0 24px rgba(0,230,118,.5)}
+.amdet{font-size:11px;color:var(--muted2);text-align:center;margin-bottom:18px;line-height:1.6;white-space:pre-line}
+.ambtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.ambtn{border-radius:12px;padding:14px 8px;text-align:center;font-size:13px;font-weight:800;text-decoration:none;display:block;cursor:pointer;transition:transform .12s}
+.ambtn:active{transform:scale(.96)}
+.ambtn.buy{background:var(--green);color:#000}
+.ambtn.sell{background:var(--rbg);border:1px solid var(--rborder);color:var(--red)}
+.amclose{width:100%;background:var(--s2);border:1px solid var(--border2);color:var(--muted2);border-radius:12px;padding:12px;font-size:12px;font-weight:600;cursor:pointer;text-align:center;transition:background .15s}
+.amclose:active{background:var(--s3)}
+
+/* ALERTAS LOG */
+.alog{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.ali{background:var(--gbg);border:1px solid var(--gborder);border-radius:var(--r);padding:12px 14px}
+.alit{font-size:10px;color:var(--muted2);font-family:var(--mono);margin-bottom:3px}
+.alth{font-size:13px;font-weight:800;color:var(--green);margin-bottom:4px}
+.ald{font-size:11px;color:var(--text);line-height:1.5;margin-bottom:8px}
+.albtns{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.albtn{border-radius:var(--rsm);padding:9px;text-align:center;font-size:11px;font-weight:700;text-decoration:none;display:block}
+.albtn.buy{background:var(--gbg);border:1px solid var(--gborder);color:var(--green)}
+.albtn.sell{background:var(--rbg);border:1px solid var(--rborder);color:var(--red)}
+
+/* FEES */
+.fcard{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:14px;overflow-x:auto;margin-bottom:12px}
+.ftbl{width:100%;border-collapse:collapse;font-size:11px}
+.ftbl th{font-size:9px;color:var(--muted2);text-align:left;padding:4px 6px;border-bottom:1px solid var(--border);font-weight:700;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.ftbl td{padding:7px 6px;font-family:var(--mono);border-bottom:1px solid rgba(255,255,255,.025)}
+.ftbl tr:last-child td{border-bottom:none}
+.ftbl .exnm{font-family:-apple-system,'Segoe UI',sans-serif;font-weight:600}
+
+/* MISC */
+.spin{width:22px;height:22px;border:2px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:sp .8s linear infinite;margin:0 auto 10px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.ld{text-align:center;padding:28px 16px}
+.em{font-size:12px;color:var(--muted2);text-align:center;padding:22px 16px}
+
+/* INFO CARD */
+.icard{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px;font-size:12px;color:var(--muted2);line-height:1.8}
+.icard strong{color:var(--text)}
+
+/* ── v7: configuración a la vista ── */
+.cfg{margin-bottom:8px}
+.cfgline{display:flex;align-items:center;gap:7px;width:100%;background:transparent;border:none;color:var(--muted2);font-size:11px;font-family:inherit;padding:2px 4px 10px;cursor:pointer;text-align:left}
+.cfgline #cfgsum{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cgear{color:var(--blue);font-size:13px}
+.cgo{color:var(--muted2);font-size:14px}
+.khint{display:none;font-size:11px;color:var(--muted2);background:var(--bbg);border:1px solid var(--bborder);border-radius:var(--rsm);padding:8px 11px;margin:-4px 0 14px;line-height:1.5}
+.khint.show{display:block}
+.ctab[data-coin="x"].act{background:linear-gradient(135deg,#0a2f38,#06222a);border-color:rgba(0,188,212,.4);color:var(--teal)}
+.ptbl .p2p-badge{font-size:8px;padding:1px 4px;border-radius:5px;font-weight:700;background:var(--bbg);border:1px solid var(--bborder);color:var(--blue);margin-right:4px;vertical-align:middle}
+
+/* CRUZ: dónde comprar y dónde vender */
+.xb{display:grid;grid-template-columns:1fr 1fr}
+.xbc{padding:10px 10px 8px;min-width:0}
+.xbc+.xbc{border-left:1px solid var(--border)}
+.xbconv{padding:10px 10px 8px;border-top:1px solid var(--border)}
+.xbh{font-size:9px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px}
+.xbr{display:flex;justify-content:space-between;align-items:baseline;gap:6px;padding:3px 0;font-size:11px}
+.xbn{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.xbn i{font-style:normal;font-weight:400;color:var(--muted2);font-size:9px}
+.xbv{font-family:var(--mono);font-weight:700;font-size:11px;white-space:nowrap}
+.xbe{font-size:11px;color:var(--muted2)}
+
+/* Rutas: marcas y agrupadores */
+.oppflag.info{background:var(--bbg);border-color:var(--bborder);color:var(--blue)}
+.oppcoin{font-size:9px;font-weight:400;color:var(--muted2);font-family:var(--mono)}
+.subh{font-size:10px;font-weight:700;color:var(--muted2);letter-spacing:.6px;text-transform:uppercase;margin-top:8px}
+.subnote{font-size:10.5px;color:var(--muted2);line-height:1.5}
+.cname{font-size:12px;font-weight:700}
+.cnote{font-size:10.5px;color:var(--yellow);background:var(--ybg);border:1px solid var(--yborder);border-radius:var(--rsm);padding:7px 9px;line-height:1.5}
+.oppc .oppnet:last-child{margin-bottom:0}
+
+/* Otros: selector de monitor */
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:var(--s1);border:1px solid var(--border2);border-radius:12px;padding:4px;margin-bottom:12px}
+.segb{background:transparent;border:none;color:var(--muted2);font-size:12px;font-weight:700;padding:9px 4px;border-radius:9px;cursor:pointer;font-family:inherit}
+.segb.act{background:var(--s3);color:var(--text)}
+
+/* Tarjetas de datos y tablas */
+.ccard{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:12px 12px 10px;margin-bottom:12px}
+.ct{font-size:13px;font-weight:700;color:var(--text)}
+.cs{font-size:11px;color:var(--muted2);line-height:1.5;margin:3px 0 8px}
+.cs b{color:var(--text)}
+.cfoot{font-size:10px;color:var(--muted2);line-height:1.6;margin:8px 2px 14px}
+.ccard .cfoot{margin:8px 0 0;padding-top:8px;border-top:1px solid var(--border)}
+.tscroll{overflow-x:auto}
+.tview .tscroll{max-height:260px;overflow-y:auto}
+.dtbl{width:100%;border-collapse:collapse;font-size:11px;font-variant-numeric:tabular-nums}
+.dtbl th{font-size:9px;color:var(--muted2);text-align:right;padding:5px 6px;border-bottom:1px solid var(--border2);font-weight:700;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;position:sticky;top:0;background:var(--s1)}
+.dtbl th:first-child,.dtbl td:first-child{text-align:left;padding-left:2px}
+.dtbl td{padding:7px 6px;border-bottom:1px solid rgba(255,255,255,.03);text-align:right;white-space:nowrap;color:var(--text)}
+.dtbl tr:last-child td{border-bottom:none}
+.dtbl .exnm{font-weight:700;font-size:12px}
+.dtbl td:first-child{white-space:normal}
+.dtbl .exsub{font-size:9px;color:var(--muted2);margin-top:2px;font-weight:400}
+.dtbl .mut{color:var(--muted2);text-align:left;white-space:normal}
+.inrow{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11px;color:var(--muted2)}
+.ccard .tscroll+.inrow{margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.inrow span{white-space:nowrap;color:var(--muted2)}
+.inrow input,.inrow select{background:var(--s2);border:1px solid var(--border2);color:var(--text);border-radius:var(--rsm);padding:7px 8px;font-size:12px;font-family:var(--mono);font-weight:700;outline:none}
+.inrow input{width:62px;text-align:right}
+.inrow input:focus,.inrow select:focus{border-color:var(--blue)}
+
+/* Historial: filtros, cifras y gráficos */
+.frow{display:grid;grid-template-columns:1.25fr 1fr .9fr;gap:8px;margin-bottom:10px}
+.fsel{display:flex;flex-direction:column;gap:4px;min-width:0}
+.fsel span{font-size:9px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.4px}
+.fsel select,.fsel input{width:100%;min-width:0;background:var(--s1);border:1px solid var(--border2);color:var(--text);border-radius:var(--rsm);padding:9px 8px;font-size:12px;font-weight:700;font-family:inherit;outline:none;appearance:none}
+.fsel select:focus,.fsel input:focus{border-color:var(--blue)}
+.hsrc{font-size:10.5px;color:var(--muted2);line-height:1.55;margin-bottom:12px}
+#tp-hist.busy #h-body{opacity:.5}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.tile{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:11px 12px;min-width:0}
+.tl{font-size:10px;color:var(--muted2);margin-bottom:5px}
+.tv{font-size:22px;font-weight:700;color:var(--text);line-height:1.05;letter-spacing:-.3px}
+.ts{font-size:10px;color:var(--muted2);margin-top:5px;line-height:1.4}
+.chost{position:relative;touch-action:pan-y}
+svg.chart{display:block;width:100%;height:auto;outline:none;overflow:visible}
+svg.chart:focus-visible{outline:1px solid var(--border2);outline-offset:2px;border-radius:6px}
+.chart .grid{stroke:rgba(255,255,255,.07);stroke-width:1;shape-rendering:crispEdges}
+.chart .gzero{stroke:rgba(255,255,255,.24);stroke-width:1;shape-rendering:crispEdges}
+.chart .thr{stroke:var(--muted2);stroke-width:1;stroke-dasharray:4 3}
+.chart .axl{fill:var(--muted2);font-size:9.5px;font-variant-numeric:tabular-nums;font-family:-apple-system,'Segoe UI',sans-serif}
+.chart .dlab{fill:var(--text);font-size:10.5px;font-weight:700;font-family:-apple-system,'Segoe UI',sans-serif}
+.chart .band{fill:#448aff;opacity:.13}
+.chart .serie{fill:none;stroke:#448aff;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.chart .pt{fill:#448aff}
+.chart .dot{fill:#448aff;stroke:var(--s1);stroke-width:2}
+.chart .bar{fill:#448aff}
+.chart .bar.on{fill:#8ab4ff}
+.chart .cross{stroke:rgba(255,255,255,.35);stroke-width:1;shape-rendering:crispEdges;pointer-events:none}
+.chart .hit{fill:transparent;cursor:crosshair}
+.tip{display:none;position:absolute;top:0;z-index:5;pointer-events:none;background:var(--s3);border:1px solid var(--border2);border-radius:8px;padding:7px 9px;box-shadow:0 6px 18px rgba(0,0,0,.45);white-space:nowrap}
+.tiph{font-size:9.5px;color:var(--muted2);margin-bottom:3px}
+.tipr{font-size:11px;color:var(--muted2);line-height:1.5}
+.tipr b{color:var(--text);font-weight:700}
+.tipk{display:inline-block;width:10px;height:2px;background:#448aff;border-radius:1px;vertical-align:middle;margin-right:5px}
+.tview{margin-top:8px}
+.tview summary{font-size:10.5px;color:var(--muted2);cursor:pointer;padding:4px 0;list-style-position:inside}
+.tview[open] summary{margin-bottom:4px}
+.winl{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.win{background:var(--s1);border:1px solid var(--border);border-radius:var(--rsm);padding:9px 11px}
+.winh{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:var(--muted2)}
+.winh b{color:var(--text)}
+.wins{font-size:10px;color:var(--muted2);margin-top:3px}
+
+/* Ajustes */
+.optl,.swl{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.opt,.swr{background:var(--s1);border:1px solid var(--border2);border-radius:var(--r);padding:11px 13px;text-align:left;cursor:pointer;color:var(--text);font-family:inherit;display:flex;gap:10px;align-items:center;width:100%}
+.opt{flex-direction:column;align-items:flex-start;gap:3px}
+.opt.on{border-color:rgba(68,138,255,.6);background:linear-gradient(135deg,var(--s1),rgba(68,138,255,.08))}
+.opt.on .optt::before{content:'● ';color:var(--blue)}
+.optt{font-size:13px;font-weight:700;display:block}
+.optd{font-size:11px;color:var(--muted2);line-height:1.5;display:block;margin-top:2px}
+.swt{flex:1;min-width:0}
+.swk{flex-shrink:0;width:38px;height:22px;border-radius:11px;background:var(--s3);border:1px solid var(--border2);position:relative;transition:background .15s}
+.swk::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--muted2);transition:transform .15s,background .15s}
+.swk.on{background:rgba(68,138,255,.35);border-color:rgba(68,138,255,.6)}
+.swk.on::after{transform:translateX(16px);background:var(--blue)}
+.chiph{font-size:10px;font-weight:700;color:var(--muted2);margin:2px 0 8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.chip{background:var(--s1);border:1px solid var(--border);color:var(--muted);border-radius:16px;padding:7px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:line-through}
+.chip.on{color:var(--text);border-color:rgba(68,138,255,.5);background:var(--bbg);text-decoration:none}
+.bulk{display:flex;gap:8px;margin-bottom:16px}
+.bulk button{background:transparent;border:1px solid var(--border2);color:var(--muted2);border-radius:8px;padding:6px 10px;font-size:10.5px;font-weight:600;cursor:pointer;font-family:inherit}
+</style>
+</head>
+<body>
+
+<!-- HDR -->
+<div class="hdr">
+  <div class="logo">
+    <div class="logo-ic">Ar</div>
+    <div><div class="logo-name">ArbitrAR</div><div class="logo-sub">Arbitraje · Tiempo real</div></div>
+  </div>
+  <div class="hdr-r">
+    <div class="ldot" id="ldot"></div>
+    <span class="cdbadge" id="cdb">—s</span>
+    <button class="hbtn" onclick="manualRefresh()" id="rbtn">↻</button>
+    <button class="hbtn" id="pbtn" onclick="toggleLoop()">⏸</button>
+  </div>
+</div>
+
+<!-- ALERT OVERLAY -->
+<div class="aov" id="aov">
+  <div class="amod">
+    <div class="amic">🚨</div>
+    <div class="amt">OPORTUNIDAD DETECTADA</div>
+    <div class="amsub" id="amroute">—</div>
+    <div class="ampnl" id="ampnl">+0.00%</div>
+    <div class="amdet" id="amdet">—</div>
+    <div class="ambtns">
+      <a class="ambtn buy" id="ambuy" href="#" onclick="openExchange(event,this)">🟢 COMPRAR AHORA</a>
+      <a class="ambtn sell" id="amsell" href="#" onclick="openExchange(event,this)">🔴 VENDER AHORA</a>
+    </div>
+    <div class="amclose" onclick="closeAov()">✕ Cerrar — seguir monitoreando</div>
+  </div>
+</div>
+
+<!-- PAGE -->
+<div class="page">
+
+  <!-- CONFIG -->
+  <div class="cfg">
+    <div class="cpill"><label for="cap">Capital</label><span style="color:var(--muted2);font-size:13px">U$D</span><input type="number" id="cap" value="1000" min="10" max="999999" step="100" onchange="onConfigChange()"></div>
+    <div class="cpill"><label for="apct">Alerta %</label><input type="number" id="apct" value="0.5" min="0.1" max="20" step="0.1" style="width:38px" onchange="onConfigChange()"></div>
+  </div>
+  <button type="button" class="cfgline" onclick="sw('cfg')"><span class="cgear">⚙</span><span id="cfgsum">Ajustes</span><span class="cgo">›</span></button>
+
+  <!-- FX STRIP -->
+  <div class="fxs">
+    <div class="fxc"><span class="fl">USD Blue</span><span class="fv" id="fx-b">—</span></div>
+    <div class="fxc"><span class="fl">USD Oficial</span><span class="fv" id="fx-o">—</span></div>
+    <div class="fxc"><span class="fl">MEP</span><span class="fv" id="fx-m">—</span></div>
+    <div class="fxc"><span class="fl">USDT/ARS</span><span class="fv" id="fx-u">—</span></div>
+    <div class="fxc"><span class="fl">CCL</span><span class="fv" id="fx-c">—</span></div>
+    <div class="fxc"><span class="fl">BTC/USD</span><span class="fv" id="fx-btc">—</span></div>
+    <div class="fxc"><span class="fl">ETH/USD</span><span class="fv" id="fx-eth">—</span></div>
+    <div class="fxc"><span class="fl">BTC/ARS</span><span class="fv" id="fx-btcars">—</span></div>
+    <div class="fxc"><span class="fl">ETH/ARS</span><span class="fv" id="fx-ethars">—</span></div>
+  </div>
+
+  <!-- TAB: MERCADO -->
+  <div class="tp act" id="tp-market">
+
+    <!-- MONEDAS: bajo cada una, su mejor ruta neta del momento. Lo que sigue es de la moneda elegida. -->
+    <div class="sh">Mejor ruta neta por moneda</div>
+    <div class="ctabs">
+      <div class="ctab act" data-coin="usdt" onclick="setCoin('usdt',this)"><span class="ctn">USDT</span><span class="ctp none" id="ctp-usdt">···</span></div>
+      <div class="ctab" data-coin="usdc" onclick="setCoin('usdc',this)"><span class="ctn">USDC</span><span class="ctp none" id="ctp-usdc">···</span></div>
+      <div class="ctab" data-coin="dai" onclick="setCoin('dai',this)"><span class="ctn">DAI</span><span class="ctp none" id="ctp-dai">···</span></div>
+      <div class="ctab" data-coin="btc" onclick="setCoin('btc',this)"><span class="ctn">BTC</span><span class="ctp none" id="ctp-btc">···</span></div>
+      <div class="ctab" data-coin="eth" onclick="setCoin('eth',this)"><span class="ctn">ETH</span><span class="ctp none" id="ctp-eth">···</span></div>
+      <div class="ctab" data-coin="x" onclick="setCoin('x',this)"><span class="ctn">CRUZ</span><span class="ctp none" id="ctp-x">···</span></div>
+    </div>
+
+    <div class="krow">
+      <div class="kpi"><div class="kl" id="kbestlbl">Mejor ruta neta</div><div class="kv none" id="kbest">—</div><div class="ks" id="kbr">sin datos</div></div>
+      <div class="kpi b"><div class="kl">Con ganancia</div><div class="kv" id="kcount">—</div><div class="ks">de <span id="ktotal">—</span> rutas <span id="kcoin"></span></div></div>
+      <div class="kpi y"><div class="kl" id="kkpilbl">USDT/ARS</div><div class="kv" id="kusdt">—</div><div class="ks" id="kusdtsub">mediana del mercado</div></div>
+      <div class="kpi r"><div class="kl">Spread blue</div><div class="kv" id="kspread">—</div><div class="ks">vs oficial</div></div>
+    </div>
+    <div class="khint" id="khint"></div>
+
+    <div class="sh"><span><span id="sh-prices-lbl">Precios en vivo — </span><span id="sh-coin-lbl" style="color:var(--text)">USDT</span></span></div>
+    <!-- Sortable price table -->
+    <div class="ptbl-wrap" id="ptbl-wrap">
+      <div class="ld"><div class="spin"></div></div>
+    </div>
+
+    <div class="sh">Rutas de arbitraje</div>
+    <div class="diag" id="diag"></div>
+    <div class="oppl" id="oppl"><div class="ld"><div class="spin"></div><div style="color:var(--muted2);font-size:12px">Calculando...</div></div></div>
+  </div>
+
+  <!-- TAB: OTROS ARBITRAJES -->
+  <div class="tp" id="tp-otros">
+    <div class="seg" role="tablist">
+      <button type="button" class="segb act" onclick="monSub('brecha',this)">Brecha</button>
+      <button type="button" class="segb" onclick="monSub('tri',this)">Triangular</button>
+      <button type="button" class="segb" onclick="monSub('fund',this)">Tasas</button>
+    </div>
+    <div id="mon-body"><div class="ld"><div class="spin"></div></div></div>
+  </div>
+
+  <!-- TAB: HISTORIAL -->
+  <div class="tp" id="tp-hist">
+    <!-- Una sola fila de filtros: todo lo de abajo usa el mismo recorte -->
+    <div class="frow">
+      <label class="fsel"><span>Período</span><select id="h-period" onchange="histFilter()">
+        <option value="1440">24 horas</option>
+        <option value="10080">7 días</option>
+        <option value="43200">30 días</option>
+        <option value="0">Todo</option>
+      </select></label>
+      <label class="fsel"><span>Moneda</span><select id="h-coin" onchange="histFilter()">
+        <option value="all">Todas</option>
+        <option value="usdt">USDT</option>
+        <option value="usdc">USDC</option>
+        <option value="dai">DAI</option>
+        <option value="btc">BTC</option>
+        <option value="eth">ETH</option>
+        <option value="x">CRUZ</option>
+      </select></label>
+      <label class="fsel"><span>Umbral %</span><input type="number" id="h-thr" step="0.05" min="-5" max="20" onchange="histFilter()"></label>
+    </div>
+    <div class="hsrc" id="h-src"></div>
+    <div id="h-body"><div class="ld"><div class="spin"></div></div></div>
+  </div>
+
+  <!-- TAB: SIMULADOR -->
+  <div class="tp" id="tp-sim">
+    <div class="sh">Simulador de rentabilidad</div>
+    <div class="simcard">
+      <div class="simrow"><label for="sim-coin">Moneda</label><select id="sim-coin" onchange="populateSim()">
+        <option value="usdt">USDT</option>
+        <option value="usdc">USDC</option>
+        <option value="dai">DAI</option>
+        <option value="btc">BTC</option>
+        <option value="eth">ETH</option>
+      </select></div>
+      <div class="simrow"><label for="sc">Capital (USD)</label><input type="number" id="sc" value="1000" min="10" step="100" oninput="simulate()"></div>
+      <div class="simrow"><label for="sb">Comprar en</label><select id="sb" onchange="simulate()"></select></div>
+      <div class="simrow"><label for="ss">Vender en</label><select id="ss" onchange="simulate()"></select></div>
+      <div class="simrow" id="sim-net-row"><label for="sn" id="sn-lbl">Red de transferencia</label><select id="sn" onchange="simulate()">
+        <option value="">Auto · la más barata</option>
+      </select></div>
+      <div class="simres" id="simr"><div class="em">Esperando datos...</div></div>
+      <div class="simbtns" id="simbtns" style="display:none">
+        <a class="simbtn buy" id="sbb" href="#" onclick="openExchange(event,this)">🟢 Comprar</a>
+        <a class="simbtn sell" id="sbs" href="#" onclick="openExchange(event,this)">🔴 Vender</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: ALERTAS -->
+  <div class="tp" id="tp-alerts">
+    <div class="sh">Alertas disparadas</div>
+    <div class="alog" id="alog"><div class="em">Sin alertas aún. Monitoreando 24/7.</div></div>
+  </div>
+
+  <!-- TAB: AJUSTES -->
+  <div class="tp" id="tp-cfg">
+    <div class="sh">Cómo operás</div>
+    <div class="optl" id="cfg-mode"></div>
+    <div class="sh">Qué entra al cálculo</div>
+    <div class="swl" id="cfg-sw"></div>
+    <div class="sh">Mis exchanges</div>
+    <div class="icard">Tocá un exchange para dejarlo afuera si no tenés cuenta ahí. Las rutas, las alertas y el historial usan solo los activos.</div>
+    <div id="cfg-ex"></div>
+
+    <div class="sh">Monitor en segundo plano</div>
+    <div class="icard"><div id="botsync">—</div></div>
+
+    <div class="sh">Cuándo una ruta es operable</div>
+    <div class="icard">
+      <div>⏱ <strong>Cotización vigente</strong> — cada precio trae la hora en que el exchange lo actualizó. Con más de 3 minutos de atraso queda fuera del cálculo y la tabla lo marca <strong>VIEJO</strong>.</div>
+      <div>🔗 <strong>Retiro costeado</strong> — se descuenta la comisión real de retiro del exchange donde comprás, por la red más barata que también opera el exchange donde vendés. Sin red en común no hay ruta. Entre dos plazas de la misma plataforma el paso es interno y sin costo.</div>
+      <div>📏 <strong>Precio para tu monto</strong> — los precios se piden para la cantidad que mueve tu capital, no para una unidad mínima.</div>
+      <div>✅ <strong>Alarma confirmada</strong> — suena solo si la ganancia sigue ahí después de que los dos exchanges volvieron a cotizar (suele tardar cerca de un minuto). Una ganancia neta mayor al 5%, o un precio más de 5% mejor que el del mercado, se marca como dato sospechoso y no suena.</div>
+      <div style="margin-top:8px;font-size:10px;color:var(--muted)">La transferencia entre exchanges tarda minutos: en BTC y ETH el precio puede moverse más que la ganancia en ese lapso. En dos puntas ese riesgo no existe, pero necesitás saldo en los dos lados.</div>
+    </div>
+    <div class="sh">Cómo abrir las apps</div>
+    <div class="icard">
+      Al tocar <strong>Comprar</strong> o <strong>Vender</strong>, el sistema intenta abrir la app instalada en tu teléfono. Si no está instalada, abre la web en el navegador.
+    </div>
+    <div class="sh"><span>Costos en vivo — <span id="info-coin" style="color:var(--text)">USDT</span></span></div>
+    <div class="fcard">
+      <div style="font-size:11px;color:var(--muted2);line-height:1.7;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)">
+        Los precios son <strong style="color:var(--text)">totalAsk/totalBid</strong> de CriptoYa: ya incluyen la comisión de trading. El spread es lo que perdés por comprar y vender en el mismo exchange.
+      </div>
+      <table class="ftbl">
+        <thead><tr><th>Exchange</th><th>Spread medido</th><th>Retiro más barato</th></tr></thead>
+        <tbody id="ftb"></tbody>
+      </table>
+    </div>
+    <div class="sh">Fuentes de datos</div>
+    <div class="icard">
+      <div>📡 <strong>CriptoYa</strong> — precios por exchange, comisiones de retiro, dólar MEP y USDT contra dólares</div>
+      <div>💲 <strong>DolarAPI</strong> — blue, oficial, MEP, CCL</div>
+      <div>🔌 <strong>Binance</strong> — BTC/USD y ETH/USD en tiempo real, conversión entre stablecoins y libro de órdenes del triángulo</div>
+      <div>📈 <strong>Binance, Bybit y OKX</strong> — tasas de financiamiento de los perpetuos</div>
+      <div style="margin-top:8px;font-size:10px;color:var(--muted)">Actualización automática cada 15s. No es asesoramiento financiero. Motor <span id="engver">—</span></div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<!-- BOTTOM NAV -->
+<nav class="bnav">
+  <div class="bni act" data-t="market" onclick="sw('market',this)"><div class="bnic">📊</div><div class="bnil">Mercado</div></div>
+  <div class="bni" data-t="otros" onclick="sw('otros',this)"><div class="bnic">🔀</div><div class="bnil">Otros</div></div>
+  <div class="bni" data-t="hist" onclick="sw('hist',this)"><div class="bnic">📈</div><div class="bnil">Historial</div></div>
+  <div class="bni" data-t="sim" onclick="sw('sim',this)"><div class="bnic">🧮</div><div class="bnil">Simulador</div></div>
+  <div class="bni" data-t="alerts" onclick="sw('alerts',this)"><div class="bnic">🔔</div><div class="bnil" id="alerttab">Alertas</div></div>
+  <div class="bni" data-t="cfg" onclick="sw('cfg',this)"><div class="bnic">⚙️</div><div class="bnil">Ajustes</div></div>
+</nav>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   ArbitrAR — motor de rutas v7
+
+   Reglas que hacen que una ruta sea operable:
+   1. Vigencia: cada cotización de CriptoYa trae su propio `time`. Una cotización
+      que no se actualiza no entra al cálculo, aunque la API la siga devolviendo.
+   2. Precio por unidad: CriptoYa cotiza siempre por 1 unidad. El número de la URL
+      es el volumen a operar (define el precio en exchanges con libro de órdenes).
+   3. Transferencia real: el retiro se descuenta con la comisión que informa
+      CriptoYa por exchange y por red; sin red en común no hay ruta.
+   4. Confirmación: la alarma exige que la ganancia siga ahí después de que los dos
+      exchanges de la ruta volvieron a cotizar.
+   5. Mis exchanges: solo cuentan las rutas entre exchanges que el usuario dejó activos.
+
+   BotService.java aplica estas mismas reglas con los mismos parámetros.
+══════════════════════════════════════════════════════════════ */
+const ENGINE_VERSION = 'v7.0 · 07/10/2026';
+
+const CFG = {
+  CYCLE_MS: 15000,            // frecuencia de consulta
+  STALE_SEC: 180,             // antigüedad máxima de una cotización contra la más nueva de la misma respuesta
+  FEED_LAG_SEC: 180,          // atraso máximo de toda la respuesta contra el reloj: más que esto = feed caído
+  MAX_PLAUSIBLE_PCT: 5,       // ganancia neta superior = dato sospechoso: se marca y no dispara alarma
+  MAX_PLAUSIBLE_P2P_PCT: 2,   // el mismo tope, más estricto, cuando alguna punta es un anuncio P2P
+  MKT_MIN_VENUES: 3,          // exchanges vigentes necesarios para hablar de "precio de mercado"
+  ALERT_LOG_PER_CYCLE: 5,     // de las rutas que suenan juntas, cuántas se anotan en la pestaña Alertas
+  ALERT_COOLDOWN_MS: 300000,  // no repetir la alarma de una misma ruta antes de 5 minutos…
+  REALERT_STEP_PCT: 0.5,      // …salvo que mejore al menos este margen
+  FEES_TTL_MS: 600000,        // refresco de comisiones de retiro
+  HUB: 'binance',             // dónde se convierte una stablecoin en otra en las rutas cruzadas
+  SWAP_FEE_PCT: 0.1,          // comisión supuesta por cada conversión en el hub (taker estándar)
+  HUB_TTL_MS: 60000,          // vigencia del precio de conversión si falla una consulta
+  HUB_RETRY_MS: 60000,        // espera antes de volver a pedir un par que no respondió
+  FETCH_TIMEOUT_MS: 12000,
+};
+
+/* ══════════════════════════════════════════════════════════════
+   MONEDAS
+   usdRef: precio aproximado en USD, solo para estimar el volumen de la primera consulta
+   dec:    decimales al mostrar cantidades
+══════════════════════════════════════════════════════════════ */
+const COINS = {
+  usdt:{ label:'USDT', unit:'USDT', usdRef:1,     dec:2, isCrypto:false },
+  usdc:{ label:'USDC', unit:'USDC', usdRef:1,     dec:2, isCrypto:false },
+  dai: { label:'DAI',  unit:'DAI',  usdRef:1,     dec:2, isCrypto:false },
+  btc: { label:'BTC',  unit:'BTC',  usdRef:90000, dec:6, isCrypto:true  },
+  eth: { label:'ETH',  unit:'ETH',  usdRef:3000,  dec:5, isCrypto:true  },
+};
+const COIN_IDS = Object.keys(COINS);
+const STABLES = ['usdt', 'usdc', 'dai'];
+const XID = 'x';                            // "moneda" de las rutas cruzadas: se compra una stablecoin y se vende otra
+const TABS = [...COIN_IDS, XID];
+const tabLabel = id => id === XID ? 'CRUZ' : COINS[id].label;
+
+const NETS = {
+  TRON:'TRC-20 (Tron)', BSC:'BEP-20 (BSC)', ETHEREUM:'ERC-20 (Ethereum)', POLYGON:'Polygon',
+  ARBITRUM:'Arbitrum', OPTIMISM:'Optimism', BASE:'Base', SOLANA:'Solana', AVALANCHE:'Avalanche',
+  ZKSYNC:'zkSync', BITCOIN:'Bitcoin', LN:'Lightning', TON:'TON', APTOS:'Aptos', PLASMA:'Plasma',
+  STELLAR:'Stellar', ALGORAND:'Algorand', SUI:'Sui', SONIC:'Sonic', LACHAIN:'LaChain',
+  INTERNAL:'transferencia interna',
+};
+
+/* ══════════════════════════════════════════════════════════════
+   EXCHANGES
+   keys: claves posibles en CriptoYa para los precios, en orden de preferencia.
+   fk:   claves para las comisiones de retiro, si no son las mismas.
+   grp:  plataforma. Dos plazas de la misma plataforma (Binance y Binance P2P) se pasan
+         la moneda por transferencia interna, sin red y sin costo.
+   p2p:  la cotización es un anuncio entre personas, no un precio del exchange.
+   usd:  recibe y envía dólares por transferencia bancaria en Argentina (para la brecha entre dólares).
+   Qué monedas opera cada uno no se declara acá: sale de la respuesta de la API.
+══════════════════════════════════════════════════════════════ */
+const EX = {};
+function venue(id, name, short, keys, url, o) {
+  EX[id] = Object.assign({ id, name, short, keys, fk:null, grp:id, p2p:false, usd:false, url, pkg:null }, o || {});
+}
+venue('nexo',           'Nexo',            'Nexo',      ['nexo'],           'https://nexo.com',                 { pkg:'com.nexowallet' , usd:true });
+venue('letsbit',        'LetsBit',         'LetsBit',   ['letsbit'],        'https://letsbit.io',               { pkg:'io.letsbit.app' , usd:true });
+venue('ripio',          'Ripio',           'Ripio',     ['ripio'],          'https://exchange.ripio.com',       { pkg:'com.ripio.exchange' , usd:true });
+venue('ripiotrade',     'Ripio Trade',     'RipioTrd',  ['ripioexchange'],  'https://www.ripio.com');
+venue('satoshitango',   'SatoshiTango',    'SatoshiT',  ['satoshitango'],   'https://satoshitango.com',         { pkg:'com.satoshitango.app' , usd:true });
+venue('lemon',          'Lemon Cash',      'Lemon',     ['lemoncash'],      'https://lemon.me',                 { pkg:'com.applemoncash' });
+venue('fiwind',         'Fiwind',          'Fiwind',    ['fiwind'],         'https://fiwind.io',                { pkg:'io.fiwind.app' , usd:true });
+venue('astropay',       'AstroPay',        'AstroPay',  ['astropay'],       'https://astropay.com/wallet/exchange', { pkg:'com.astropay.app' });
+venue('belo',           'Belo',            'Belo',      ['belo'],           'https://belo.app',                 { pkg:'app.belo' , usd:true });
+venue('tiendacrypto',   'TiendaCrypto',    'TiendaCr',  ['tiendacrypto'],   'https://tiendacrypto.com',         { pkg:'com.tiendacrypto.app' , usd:true });
+venue('cryptomkt',      'CryptoMKT',       'CryptoMKT', ['cryptomktpro', 'cryptomkt'], 'https://cryptomkt.com', { pkg:'com.cryptomkt.app' });
+venue('decrypto',       'Decrypto',        'Decrypto',  ['decrypto'],       'https://decrypto.com',             { pkg:'com.decrypto.app' , usd:true });
+venue('cocoscrypto',    'Cocos Crypto',    'Cocos',     ['cocoscrypto'],    'https://cocos.ar',                 { pkg:'ar.cocos.app' });
+venue('bybit',          'Bybit',           'Bybit',     ['bybit'],          'https://www.bybit.com',            { pkg:'com.bybit.app' });
+venue('binance',        'Binance',         'Binance',   ['binance'],        'https://www.binance.com/es/trade/USDT_ARS?type=spot', { pkg:'com.binance.dev' });
+venue('universalcoins', 'Universal Coins', 'UnivCoin',  ['universalcoins'], 'https://universalcoins.net');
+venue('vitawallet',     'Vita Wallet',     'Vita',      ['vitawallet'],     'https://vitawallet.io');
+venue('saldo',          'Saldo.com.ar',    'Saldo',     ['saldo'],          'https://saldo.com.ar');
+venue('eluter',         'Eluter',          'Eluter',    ['eluter'],         'https://eluter.com');
+venue('bitso',          'Bitso',           'Bitso',     ['bitsoalpha', 'bitso'], 'https://bitso.com',           { pkg:'com.bitso.wallet' });
+venue('mexc',           'MEXC',            'MEXC',      ['mexc'],           'https://www.mexc.com',             { pkg:'com.mexcpro.client' });
+venue('takenos',        'Takenos',         'Takenos',   ['takenos'],        'https://takenos.com');
+venue('wallbit',        'Wallbit',         'Wallbit',   ['wallbit'],        'https://wallbit.io');
+venue('peanut',         'Peanut',          'Peanut',    ['peanut'],         'https://peanut.me');
+venue('dolarapp',       'DolarApp',        'DolarApp',  ['dolarapp'],       'https://www.dolarapp.com');
+venue('vibrant',        'Vesseo (ex Vibrant)', 'Vesseo', ['vibrant'],       'https://www.vesseoapp.com');
+venue('airtm',          'Airtm',           'Airtm',     ['airtm'],          'https://www.airtm.com');
+// Anuncios entre personas (P2P): se suman solo si el usuario los activa
+venue('binancep2p',     'Binance P2P',     'Binance',   ['binancep2p'],     'https://p2p.binance.com',  { p2p:true, grp:'binance', fk:['binancep2p', 'binance'], pkg:'com.binance.dev' });
+venue('bybitp2p',       'Bybit P2P',       'Bybit',     ['bybitp2p'],       'https://www.bybit.com',    { p2p:true, grp:'bybit', fk:['bybitp2p', 'bybit'], pkg:'com.bybit.app' });
+venue('okxp2p',         'OKX P2P',         'OKX',       ['okexp2p'],        'https://www.okx.com',      { p2p:true, pkg:'com.okinc.okex.gp' });
+venue('bitgetp2p',      'Bitget P2P',      'Bitget',    ['bitgetp2p'],      'https://www.bitget.com',   { p2p:true, fk:['bitgetp2p', 'bitget'] });
+venue('kucoinp2p',      'KuCoin P2P',      'KuCoin',    ['kucoinp2p'],      'https://www.kucoin.com',   { p2p:true, fk:['kucoinp2p', 'kucoin'] });
+venue('htxp2p',         'HTX P2P',         'HTX',       ['huobip2p'],       'https://www.htx.com',      { p2p:true });
+venue('bingxp2p',       'BingX P2P',       'BingX',     ['bingxp2p'],       'https://bingx.com',        { p2p:true });
+venue('mexcp2p',        'MEXC P2P',        'MEXC',      ['mexcp2p'],        'https://www.mexc.com',     { p2p:true, grp:'mexc', fk:['mexcp2p', 'mexc'], pkg:'com.mexcpro.client' });
+venue('weexp2p',        'WEEX P2P',        'WEEX',      ['weexp2p'],        'https://www.weex.com',     { p2p:true });
+venue('eldorado',       'El Dorado',       'ElDorado',  ['eldoradop2p'],    'https://eldorado.io',      { p2p:true });
+venue('lemonp2p',       'Lemon P2P',       'Lemon',     ['lemoncashp2p'],   'https://lemon.me',         { p2p:true, grp:'lemon', fk:['lemoncashp2p', 'lemoncash'], pkg:'com.applemoncash' });
+venue('p2pme',          'P2P.me',          'P2P.me',    ['p2pme'],          'https://p2p.me',           { p2p:true });
+
+const EX_IDS = Object.keys(EX);
+
+/* ══════════════════════════════════════════════════════════════
+   CONFIGURACIÓN DEL USUARIO
+   Se conserva entre sesiones y se envía al monitor en segundo plano (BotService),
+   que trabaja con estos mismos valores desde su próximo ciclo.
+══════════════════════════════════════════════════════════════ */
+const USER_CFG_KEY = 'arbitrar.cfg';
+const USER_CFG = {
+  capital:  { def:1000, min:10,  max:999999 },   // mismos límites que valida BotService
+  alertPct: { def:0.5,  min:0.1, max:20 },
+  triFee:   { def:0.1,  min:0,   max:1 },        // comisión por operación en el triángulo de Binance
+  mepCost:  { def:0.5,  min:0,   max:5 },        // comisión del bróker por una operación de dólar MEP
+};
+
+function clampCfg(v, lim) {
+  v = parseFloat(v);
+  return isFinite(v) ? Math.min(lim.max, Math.max(lim.min, v)) : lim.def;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ESTADO
+══════════════════════════════════════════════════════════════ */
+const S = {
+  cfg:{ mode:'transfer', p2p:false, cross:true, off:[], triFee:USER_CFG.triFee.def, mepCost:USER_CFG.mepCost.def },
+  prices:{},   // prices[coinId][exId] = { askARS, bidARS, t, key, state:'ok'|'stale'|'bad' }
+  feed:{},     // feed[coinId] = { refT, vol }   refT = cotización más nueva de la respuesta (segundos unix)
+  ref:{},      // ref[coinId]  = mediana de precios de compra vigentes (ARS por unidad)
+  mkt:{},      // mkt[coinId]  = { ask, bid } medianas del mercado, para juzgar si una cotización es creíble
+  diag:{},     // diag[tab]    = lo que quedó fuera del cálculo y por qué
+  fees:null, feesAt:0,   // comisiones de retiro: fees[exchange][MONEDA][RED] = { withdraw, time }
+  hub:{ book:{}, retry:{} }, // precios de conversión entre stablecoins en el hub
+  fx:{},
+  opps:{},     // opps[tab] = rutas entre mis exchanges, ordenadas
+  one:{},      // one[coinId] = rutas de una sola vez (modo dos puntas, sin red en común)
+  hint:{},     // hint[tab] = mejor ruta que usa algún exchange desactivado, si supera a las mías
+  astate:new Map(),      // estado de alerta por ruta
+  running:true, ivId:null, cdId:null, cd:15, busy:false,
+  ws:null, actx:null,
+  activeCoin:'usdt', activeTab:'market',
+  tableSort:{ col:'ask', dir:'asc' },
+  simSig:'', simNetSig:'',
+  botSync:'none',        // si el monitor en segundo plano recibió la configuración: ok | partial | old | err | none
+  botSent:null,          // última configuración enviada al monitor
+};
+
+/* ══════════════════════════════════════════════════════════════
+   UTILS
+══════════════════════════════════════════════════════════════ */
+const $=id=>document.getElementById(id);
+const fmtN=(n,d=0)=>n==null||isNaN(n)?'—':new Intl.NumberFormat('es-AR',{minimumFractionDigits:d,maximumFractionDigits:d}).format(n);
+const fmtA=n=>n==null||isNaN(n)?'—':'$'+fmtN(n,0);
+/* Porcentaje con signo. Lo que redondea a cero se muestra sin signo: "-0.00%" no le dice nada a nadie. */
+const fmtP=(n,d=2)=>{if(n==null||isNaN(n))return '—';const s=n.toFixed(d);return +s===0?(0).toFixed(d)+'%':(n>0?'+':'')+s+'%'};
+const fmtPc=(n,d=2)=>n==null||isNaN(n)?'—':(n>=0?'+':'−')+fmtN(Math.abs(n),d)+'%';   // con coma decimal, para textos
+const fmtU=n=>n==null||isNaN(n)?'—':'U$D '+Math.abs(n).toFixed(2);
+const nowt=()=>new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+const txt=(id,v)=>{const e=$(id);if(e)e.textContent=v};
+const num=v=>{const n=+v;return isFinite(n)?n:0};
+const nowSec=()=>Math.floor(Date.now()/1000);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const trimNum=(n,d=8)=>n.toFixed(d).replace(/\.?0+$/,'');
+const netLabel=n=>NETS[n]||(n.charAt(0)+n.slice(1).toLowerCase());
+const exShort=id=>EX[id].short+(EX[id].p2p?' P2P':'');
+const sameGroup=(a,b)=>EX[a].grp===EX[b].grp;
+const pad2=n=>String(n).padStart(2,'0');
+
+function median(a) {
+  if (!a.length) return null;
+  const s = [...a].sort((x, y) => x - y), m = s.length >> 1;
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+}
+
+function fmtAge(sec) {
+  if (sec == null || !isFinite(sec)) return '—';
+  sec = Math.max(0, Math.round(sec));
+  if (sec < 90) return sec + ' s';
+  if (sec < 5400) return Math.round(sec / 60) + ' min';
+  if (sec < 172800) return Math.round(sec / 3600) + ' h';
+  return Math.round(sec / 86400) + ' d';
+}
+
+/* Duración en minutos, para ventanas y plazos */
+function fmtDur(min) {
+  if (min == null || !isFinite(min)) return '—';
+  min = Math.max(0, Math.round(min));
+  if (min < 60) return min + ' min';
+  const h = Math.floor(min / 60), m = min % 60;
+  if (h < 48) return h + ' h' + (m ? ' ' + m + ' min' : '');
+  return Math.round(min / 1440) + ' d';
+}
+
+/* Volumen para la URL de CriptoYa: 2 cifras significativas, siempre con punto decimal y sin exponente */
+function fmtVol(v) {
+  if (!(v > 0) || !isFinite(v)) v = 1;
+  return trimNum(Number(v.toPrecision(2)));
+}
+
+function nlog(msg) {
+  try { if (window.ArbitrARNative && window.ArbitrARNative.log) window.ArbitrARNative.log(String(msg)); } catch(e) {}
+}
+
+/* ARS para cualquier moneda. BTC/ETH van en millones con 5 cifras o más, para poder comparar contra el exchange */
+function fmtCoinARS(val, coinId) {
+  if (val == null || isNaN(val)) return '—';
+  const coin = COINS[coinId];
+  if (coin && coin.isCrypto) {
+    if (val >= 1000000) return '$' + fmtN(val / 1000000, val >= 100000000 ? 3 : 4) + 'M';
+    if (val >= 1000) return '$' + fmtN(val, 0);
+    return '$' + fmtN(val, 2);
+  }
+  return '$' + fmtN(val, 2);   // stablecoins con centavos: un peso entero ya es 0,06% del precio
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CONFIGURACIÓN: leer, guardar y enviar al monitor
+══════════════════════════════════════════════════════════════ */
+function readUserConfig() {
+  const c = S.cfg;
+  return {
+    capital:  clampCfg($('cap')?.value,  USER_CFG.capital),
+    alertPct: clampCfg($('apct')?.value, USER_CFG.alertPct),
+    mode: c.mode === 'both' ? 'both' : 'transfer',
+    p2p: !!c.p2p, cross: !!c.cross,
+    off: c.off.filter(id => EX[id]),
+  };
+}
+const capUSD = () => clampCfg($('cap')?.value, USER_CFG.capital);
+const thrPct = () => clampCfg($('apct')?.value, USER_CFG.alertPct);
+const offSet = () => new Set(S.cfg.off);
+const isActive = id => !S.cfg.off.includes(id);
+/* Plazas que entran al cálculo: las P2P solo si están habilitadas */
+const venueOn = id => S.cfg.p2p || !EX[id].p2p;
+
+function loadUserConfig() {
+  try {
+    const c = JSON.parse(localStorage.getItem(USER_CFG_KEY) || 'null');
+    if (!c || typeof c !== 'object') return;
+    $('cap').value  = clampCfg(c.capital,  USER_CFG.capital);
+    $('apct').value = clampCfg(c.alertPct, USER_CFG.alertPct);
+    S.cfg.mode  = c.mode === 'both' ? 'both' : 'transfer';
+    S.cfg.p2p   = c.p2p === true;
+    S.cfg.cross = c.cross !== false;
+    S.cfg.off   = Array.isArray(c.off) ? c.off.filter(id => typeof id === 'string' && EX[id]) : [];
+    S.cfg.triFee  = clampCfg(c.triFee,  USER_CFG.triFee);
+    S.cfg.mepCost = clampCfg(c.mepCost, USER_CFG.mepCost);
+  } catch(e) {}
+}
+
+function bridgeVersion() {
+  const n = window.ArbitrARNative;
+  try { return n && typeof n.version === 'function' ? (parseFloat(n.version()) || 0) : 0; } catch(e) { return 0; }
+}
+
+/* Guarda la configuración y la envía al monitor en segundo plano */
+function syncUserConfig() {
+  const c = readUserConfig();
+  $('cap').value = c.capital;       // si hubo que acotar un valor, queda a la vista el que rige
+  $('apct').value = c.alertPct;
+  try {
+    localStorage.setItem(USER_CFG_KEY, JSON.stringify(Object.assign({}, c, { triFee:S.cfg.triFee, mepCost:S.cfg.mepCost })));
+  } catch(e) {}
+  const n = window.ArbitrARNative;
+  if (!n) S.botSync = 'none';                                         // fuera de la app Android
+  else if (typeof n.setBotConfig !== 'function') S.botSync = 'old';   // APK anterior a la interfaz 5.3
+  else {
+    // La interfaz 5.3 solo acepta Capital y Alerta %; desde la 5.4 recibe la configuración completa
+    const full = bridgeVersion() >= 5.4;
+    const json = JSON.stringify(full ? c : { capital:c.capital, alertPct:c.alertPct });
+    try {
+      if (json !== S.botSent) { n.setBotConfig(json); S.botSent = json; }   // un mismo valor no se reenvía
+      S.botSync = full ? 'ok' : 'partial';
+    } catch(e) { S.botSync = 'err'; }
+  }
+  if (typeof histNoteConfig === 'function') histNoteConfig(c);
+  return c;
+}
+
+function onConfigChange() { syncUserConfig(); recalcAll(); }
+
+/* ══════════════════════════════════════════════════════════════
+   DEEP LINK
+══════════════════════════════════════════════════════════════ */
+function buildLink(exId) {
+  const ex = EX[exId];
+  if (!ex) return '#';
+  if (!ex.pkg) return ex.url;
+  return `intent://#Intent;package=${ex.pkg};scheme=https;S.browser_fallback_url=${encodeURIComponent(ex.url)};end`;
+}
+
+function openExchange(event, elOrId) {
+  event.preventDefault();
+  const el = typeof elOrId === 'string' ? $(elOrId) : elOrId;
+  if (!el) return;
+  const href = el.getAttribute('href');
+  if (!href || href === '#') return;
+  try { window.location.href = href; } catch(e) { window.open(href,'_blank'); }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   AUDIO
+══════════════════════════════════════════════════════════════ */
+function initAudio() {
+  if (S.actx) return S.actx;
+  try { S.actx = new (window.AudioContext||window.webkitAudioContext)(); } catch(e) {}
+  return S.actx;
+}
+function playAlarm() {
+  const ctx = initAudio(); if (!ctx) return;
+  const notes = [880,0,880,0,1100,0,1100,0,880,0,1320];
+  let t = ctx.currentTime;
+  notes.forEach(f => {
+    if (!f) { t+=.07; return; }
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type='square'; o.frequency.setValueAtTime(f,t);
+    g.gain.setValueAtTime(.35,t); g.gain.exponentialRampToValueAtTime(.001,t+.15);
+    o.start(t); o.stop(t+.15); t+=.18;
+  });
+  if (navigator.vibrate) navigator.vibrate([150,80,150,80,350]);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FETCH
+══════════════════════════════════════════════════════════════ */
+const PROXY = 'https://fanatics.com.ar/ar/proxy.php?url=';
+
+/* fetch con límite de tiempo: una consulta colgada no puede frenar el ciclo */
+async function fetchT(url, ms) {
+  const ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const id = ctl ? setTimeout(() => ctl.abort(), ms || CFG.FETCH_TIMEOUT_MS) : 0;
+  try { return await fetch(url, ctl ? { signal: ctl.signal } : undefined); }
+  finally { if (id) clearTimeout(id); }
+}
+
+/* Vía de siempre: el proxy del sitio (dentro de la app lo resuelve Android, sin pasar por el hosting) */
+async function getJson(url) {
+  const r = await fetchT(PROXY + encodeURIComponent(url));
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return await r.json();
+}
+
+/* Fuentes nuevas (Binance, Bybit, OKX): primero el proxy y, si no las deja pasar, directo.
+   `ok` valida la forma de la respuesta: un error con formato JSON no cuenta como dato.
+   Se recuerda por servidor la vía que funcionó, para no repetir el intento fallido en cada ciclo. */
+const VIA = {};
+async function getJsonAny(url, ok) {
+  const host = new URL(url).host;
+  const order = VIA[host] === 'direct' ? ['direct', 'proxy'] : ['proxy', 'direct'];
+  let err;
+  for (const via of order) {
+    try {
+      const r = await fetchT(via === 'proxy' ? PROXY + encodeURIComponent(url) : url);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const d = await r.json();
+      if (ok && !ok(d)) throw new Error('formato');
+      VIA[host] = via;
+      return d;
+    } catch(e) { err = e; }
+  }
+  throw err;
+}
+
+/* Datos públicos de mercado de Binance: servidor de solo lectura y, de respaldo, el principal */
+const BINANCE_BASES = ['https://data-api.binance.vision', 'https://api.binance.com'];
+let binanceBase = 0;
+async function binanceGet(path, ok) {
+  let err;
+  for (let i = 0; i < BINANCE_BASES.length; i++) {
+    const k = (binanceBase + i) % BINANCE_BASES.length;
+    try { const d = await getJsonAny(BINANCE_BASES[k] + path, ok); binanceBase = k; return d; }
+    catch(e) { err = e; }
+  }
+  throw err;
+}
+
+async function fetchDolar() {
+  try {
+    const d = await getJson('https://dolarapi.com/v1/dolares');
+    if (!Array.isArray(d)) throw new Error('formato');
+    const g = (casa) => d.find(x => x && x.casa === casa);
+    const mid = x => (x && x.compra > 0 && x.venta > 0) ? (x.compra + x.venta) / 2 : null;
+    const bl = mid(g('blue')), of = mid(g('oficial')), mep = mid(g('bolsa')), ccl = mid(g('contadoconliqui'));
+    if (bl)  S.fx.blue = bl;
+    if (of)  S.fx.oficial = of;
+    if (mep) S.fx.mep = mep;
+    if (ccl) S.fx.ccl = ccl;
+    S.fx.usdArs = S.fx.blue || S.fx.oficial || 1550;
+    return true;
+  } catch(e) { if (!S.fx.usdArs) S.fx.usdArs = 1550; return false; }
+}
+
+/* Comisiones de retiro por exchange, moneda y red. Cambian poco: se refrescan cada 10 minutos. */
+async function fetchFees() {
+  if (S.fees && Date.now() - S.feesAt < CFG.FEES_TTL_MS) return true;
+  try {
+    const d = await getJson('https://criptoya.com/api/fees');
+    if (!d || typeof d !== 'object' || Array.isArray(d) || !Object.keys(d).length) throw new Error('formato');
+    S.fees = d; S.feesAt = Date.now();
+    return true;
+  } catch(e) { return false; }   // si falla el refresco se sigue con las últimas comisiones conocidas
+}
+
+/* Unidades que mueve realmente el capital: es el volumen que se le pide a CriptoYa */
+function tradeVolume(coinId) {
+  const coin = COINS[coinId], cap = capUSD();
+  const usdArs = S.fx.usdArs, ref = S.ref[coinId];
+  const vol = (ref > 0 && usdArs > 0)
+    ? cap * usdArs / ref
+    : cap / (S.fx[coinId + 'Usd'] || coin.usdRef);
+  return fmtVol(vol);
+}
+
+async function fetchCoin(coinId) {
+  const vol = tradeVolume(coinId);
+  try {
+    const d = await getJson(`https://criptoya.com/api/${coinId}/ars/${vol}`);
+    if (!d || typeof d !== 'object' || Array.isArray(d)) throw new Error('formato');
+
+    // "Ahora" según CriptoYa: la cotización más nueva de toda la respuesta
+    let refT = 0;
+    for (const e of Object.values(d)) {
+      const t = e && typeof e === 'object' ? num(e.time) : 0;
+      if (t > refT) refT = t;
+    }
+    if (!refT) throw new Error('sin time');
+
+    const out = {};
+    for (const exId of EX_IDS) {
+      const ex = EX[exId];
+      const key = ex.keys.find(k => d[k] && typeof d[k] === 'object');
+      if (!key) continue;                       // ese exchange no cotiza esta moneda
+      const e = d[key];
+      const ask = num(e.totalAsk) || num(e.ask);   // totalAsk/totalBid ya incluyen la comisión de trading
+      const bid = num(e.totalBid) || num(e.bid);
+      if (!(ask > 0) && !(bid > 0)) continue;
+      const t = num(e.time);
+      let state = 'ok';
+      // Un exchange publica las dos puntas y la venta nunca supera a la compra. En P2P cada punta es
+      // un anuncio distinto: puede faltar una o venir cruzadas, y la plaza sirve igual para la que tenga.
+      if (!ex.p2p && (!(ask > 0) || !(bid > 0) || bid > ask)) state = 'bad';
+      else if (!t || refT - t > CFG.STALE_SEC) state = 'stale';        // dejó de actualizar
+      out[exId] = { askARS: ask > 0 ? ask : null, bidARS: bid > 0 ? bid : null, t, key, state };
+    }
+    S.prices[coinId] = out;
+    S.feed[coinId] = { refT, vol };
+
+    // Referencia de mercado: mediana de los exchanges con cotización vigente (los anuncios P2P no entran)
+    const ok = EX_IDS.filter(id => out[id] && out[id].state === 'ok' && !EX[id].p2p).map(id => out[id]);
+    const ma = median(ok.map(p => p.askARS)), mb = median(ok.map(p => p.bidARS));
+    if (ma) S.ref[coinId] = ma;
+    if (ma && mb) S.fx[coinId + 'Ars'] = (ma + mb) / 2;
+    S.mkt[coinId] = (ok.length >= CFG.MKT_MIN_VENUES && ma && mb) ? { ask: ma, bid: mb } : null;
+    return true;
+  } catch(e) { return false; }   // se conservan los últimos datos; el control de atraso los saca del cálculo si envejecen
+}
+
+/* Precio de conversión entre stablecoins en el hub (libro de Binance), para las rutas cruzadas */
+const HUB_SYMS = ['USDCUSDT', 'USDTDAI'];
+async function fetchHub() {
+  if (!S.cfg.cross) return true;
+  const res = await Promise.all(HUB_SYMS.map(async sym => {
+    if (Date.now() < (S.hub.retry[sym] || 0)) return false;      // falló hace poco: no se insiste en cada ciclo
+    try {
+      const d = await binanceGet('/api/v3/ticker/bookTicker?symbol=' + sym, x => !!x && x.symbol === sym);
+      const bid = num(d.bidPrice), ask = num(d.askPrice);
+      if (!(bid > 0) || !(ask > 0) || bid > ask) throw new Error('libro');
+      S.hub.book[sym] = { bid, ask, at: Date.now() };
+      return true;
+    } catch(e) { S.hub.retry[sym] = Date.now() + CFG.HUB_RETRY_MS; return false; }
+  }));
+  return res.some(Boolean);
+}
+
+function connectWS() {
+  if (S.ws && S.ws.readyState < 2) return;
+  try {
+    const ws = new WebSocket('wss://stream.binance.com:9443/stream?streams=btcusdt@bookTicker/ethusdt@bookTicker');
+    ws.onmessage = e => {
+      try {
+        const m = JSON.parse(e.data);
+        if (m.data?.s === 'BTCUSDT') S.fx.btcUsd = parseFloat(m.data.a);
+        if (m.data?.s === 'ETHUSDT') S.fx.ethUsd = parseFloat(m.data.a);
+      } catch {}
+    };
+    ws.onclose = () => setTimeout(connectWS, 5000);
+    S.ws = ws;
+  } catch {}
+}
+
+/* ══════════════════════════════════════════════════════════════
+   VIGENCIA DEL FEED
+══════════════════════════════════════════════════════════════ */
+function feedLag(coinId) {
+  const f = S.feed[coinId];
+  return f ? nowSec() - f.refT : Infinity;
+}
+function feedDown(coinId) { return !!S.feed[coinId] && feedLag(coinId) > CFG.FEED_LAG_SEC; }
+
+/* ══════════════════════════════════════════════════════════════
+   COMISIONES DE RETIRO
+══════════════════════════════════════════════════════════════ */
+function feeMap(exId, coinId) {
+  if (!S.fees) return null;
+  const sym = COINS[coinId].unit, ex = EX[exId];
+  for (const k of (ex.fk || ex.keys)) {
+    const m = S.fees[k] && S.fees[k][sym];
+    if (m && typeof m === 'object' && Object.keys(m).length) return m;
+  }
+  return null;
+}
+function feeOf(v) {
+  if (v == null) return null;                    // sin dato no es lo mismo que gratis
+  const f = typeof v === 'object' ? (v.withdraw == null ? NaN : +v.withdraw) : +v;
+  return isFinite(f) && f >= 0 ? f : null;
+}
+/* Redes por las que el exchange de origen retira y que el de destino también opera, de la más barata a la más cara */
+function networksFor(coinId, fromId, toId) {
+  const a = feeMap(fromId, coinId), b = feeMap(toId, coinId);
+  if (!a || !b) return [];
+  const out = [];
+  for (const n of Object.keys(a)) {
+    if (!(n in b)) continue;
+    const f = feeOf(a[n]);
+    if (f != null) out.push({ name:n, fee:f });
+  }
+  return out.sort((x, y) => x.fee - y.fee || (x.name < y.name ? -1 : x.name > y.name ? 1 : 0));
+}
+
+/* Cómo pasa la moneda de una plaza a otra:
+   - misma plataforma: transferencia interna, sin red y sin costo;
+   - si no, la red más barata en común (o la que se pida);
+   - null si no comparten ninguna; { nofee:true } si todavía no hay datos de comisiones. */
+function hop(coinId, fromId, toId, netName) {
+  if (sameGroup(fromId, toId)) return { name:'INTERNAL', fee:0, internal:true };
+  if (!S.fees) return { nofee:true, fee:0 };
+  const nets = networksFor(coinId, fromId, toId);
+  if (!nets.length) return null;
+  return (netName && nets.find(n => n.name === netName)) || nets[0];
+}
+
+const plausibleCap = (aId, bId) =>
+  (EX[aId].p2p || EX[bId].p2p) ? CFG.MAX_PLAUSIBLE_P2P_PCT : CFG.MAX_PLAUSIBLE_PCT;
+
+/* Una cotización es sospechosa por sí sola cuando operar contra el precio típico del mercado ya daría más
+   que el tope: comprar ahí y vender a la mediana, o comprar a la mediana y vender ahí. Sin esto, un precio
+   absurdo pasaría el control en las rutas hacia los exchanges que peor pagan. */
+function quoteSuspect(coinId, exId, side) {
+  const m = S.mkt[coinId], p = (S.prices[coinId] || {})[exId];
+  if (!m || !p) return false;
+  const cap = EX[exId].p2p ? CFG.MAX_PLAUSIBLE_P2P_PCT : CFG.MAX_PLAUSIBLE_PCT;
+  return side === 'buy' ? (m.bid / p.askARS - 1) * 100 > cap : (p.bidARS / m.ask - 1) * 100 > cap;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RUTAS DE UNA MONEDA
+   Comprar en un exchange, pasar la moneda al otro y venderla ahí.
+   En modo dos puntas la cuenta es la misma: el retiro pasa a ser el costo de reequilibrar
+   los saldos después de operar las dos puntas a la vez.
+══════════════════════════════════════════════════════════════ */
+function calcRoute(coinId, bId, sId, cap, netName) {
+  const P = S.prices[coinId] || {};
+  const pb = P[bId], ps = P[sId];
+  if (!pb || !ps || pb.state !== 'ok' || ps.state !== 'ok' || !pb.askARS || !ps.bidARS) return null;
+
+  const h = hop(coinId, bId, sId, netName);
+  if (!h) return { noNet:true };                 // no hay cómo llevar la moneda de un exchange al otro
+  let status = h.nofee ? 'nofee' : 'ok';         // sin comisiones no se puede costear el retiro
+  const net = h.nofee ? null : h;
+
+  const usdArs = S.fx.usdArs || 1550;
+  const capARS = cap * usdArs;
+  const fee = net ? net.fee : 0;
+  const unitsBought = capARS / pb.askARS;
+  const unitsNet = unitsBought - fee;
+  if (unitsNet <= 0) return null;
+
+  const revenueARS = unitsNet * ps.bidARS;
+  const pARS = revenueARS - capARS;
+  const pPct = (pARS / capARS) * 100;
+  if (status === 'ok' && (pPct > plausibleCap(bId, sId) || quoteSuspect(coinId, bId, 'buy') || quoteSuspect(coinId, sId, 'sell'))) status = 'suspect';
+
+  return {
+    coinId, bId, sId, status, pPct, pARS, pUSD: pARS / usdArs,
+    askARS: pb.askARS, bidARS: ps.bidARS,
+    spreadBruto: (ps.bidARS / pb.askARS - 1) * 100,     // ganancia antes del retiro
+    unitsBought, unitsNet, fee, feePct: (fee * ps.bidARS / capARS) * 100,
+    net, tBuy: pb.t, tSell: ps.t,
+    p2p: EX[bId].p2p || EX[sId].p2p,
+  };
+}
+
+const rankRoutes = (a, b) =>
+  (a.status === 'suspect' ? 1 : 0) - (b.status === 'suspect' ? 1 : 0) || b.pPct - a.pPct;
+
+/* Plazas de una moneda con cotización vigente que entran al cálculo */
+function liveVenues(coinId) {
+  const P = S.prices[coinId] || {};
+  return EX_IDS.filter(id => P[id] && P[id].state === 'ok' && venueOn(id));
+}
+
+function computeCoin(coinId) {
+  const cap = capUSD(), off = offSet();
+  const P = S.prices[coinId] || {};
+  const diag = { down: feedDown(coinId), lag: feedLag(coinId), stale:[], bad:[], noNet:0, nofee: !S.fees };
+  for (const id of EX_IDS) {
+    const p = P[id];
+    if (!p || !venueOn(id) || off.has(id)) continue;
+    if (p.state === 'stale') diag.stale.push(id);
+    else if (p.state === 'bad') diag.bad.push(id);
+  }
+  const mine = [], other = [], one = [];
+  if (!diag.down) {
+    const ids = liveVenues(coinId);
+    for (const b of ids) {
+      if (!P[b].askARS) continue;
+      for (const s of ids) {
+        if (b === s || !P[s].bidARS) continue;
+        const r = calcRoute(coinId, b, s, cap);
+        if (!r) continue;
+        const isMine = !off.has(b) && !off.has(s);
+        if (r.noNet) {
+          if (!isMine) continue;
+          diag.noNet++;
+          // Dos puntas: sin red no se puede reequilibrar, pero la operación existe una vez con el saldo de cada lado
+          if (S.cfg.mode === 'both' && S.fees) {
+            const g = (P[s].bidARS / P[b].askARS - 1) * 100;
+            if (g <= plausibleCap(b, s) && !quoteSuspect(coinId, b, 'buy') && !quoteSuspect(coinId, s, 'sell')) one.push({
+              coinId, bId:b, sId:s, status:'oneshot', pPct:g, spreadBruto:g,
+              askARS:P[b].askARS, bidARS:P[s].bidARS, tBuy:P[b].t, tSell:P[s].t, p2p: EX[b].p2p || EX[s].p2p,
+            });
+          }
+          continue;
+        }
+        (isMine ? mine : other).push(r);
+      }
+    }
+  }
+  mine.sort(rankRoutes);
+  one.sort((a, b) => b.pPct - a.pPct);
+  S.opps[coinId] = mine;
+  S.one[coinId] = one.slice(0, 5);
+  S.diag[coinId] = diag;
+  S.hint[coinId] = betterElsewhere(mine, other);
+}
+
+/* Mejor ruta operable que usa algún exchange desactivado, si supera a la mejor de las mías */
+function betterElsewhere(mine, other) {
+  let best = null;
+  for (const o of other) if (o.status === 'ok' && (!best || o.pPct > best.pPct)) best = o;
+  if (!best) return null;
+  const top = mine.find(o => o.status !== 'suspect');
+  return (!top || best.pPct > top.pPct) ? best : null;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RUTAS CRUZADAS ENTRE STABLECOINS
+   Comprar una stablecoin donde está barata, convertirla en el hub (libro real de Binance)
+   y vender la otra donde se paga más. Dos retiros como máximo: hacia el hub y desde el hub.
+══════════════════════════════════════════════════════════════ */
+function hubBook(sym) {
+  const b = S.hub.book[sym];
+  return b && Date.now() - b.at <= CFG.HUB_TTL_MS ? b : null;
+}
+
+/* Cuánto de `to` queda por cada unidad de `from` convertida en el hub, con la comisión de cada conversión */
+function convRate(from, to) {
+  const cu = hubBook('USDCUSDT'), ud = hubBook('USDTDAI');
+  const leg = (a, b) => {
+    if (a === 'usdc' && b === 'usdt') return cu ? cu.bid : null;        // vender USDC por USDT
+    if (a === 'usdt' && b === 'usdc') return cu ? 1 / cu.ask : null;    // comprar USDC con USDT
+    if (a === 'usdt' && b === 'dai')  return ud ? ud.bid : null;        // vender USDT por DAI
+    if (a === 'dai'  && b === 'usdt') return ud ? 1 / ud.ask : null;    // comprar USDT con DAI
+    return null;
+  };
+  const k = 1 - CFG.SWAP_FEE_PCT / 100;
+  const direct = leg(from, to);
+  if (direct) return { rate: direct * k, raw: direct, swaps: 1 };
+  if (from !== 'usdt' && to !== 'usdt') {                               // USDC ↔ DAI pasa por USDT
+    const a = leg(from, 'usdt'), b = leg('usdt', to);
+    if (a && b) return { rate: a * k * b * k, raw: a * b, swaps: 2 };
+  }
+  return null;
+}
+
+function calcCross(xb, xs, bId, sId, cap, conv) {
+  const hub = CFG.HUB;
+  const pb = (S.prices[xb] || {})[bId], ps = (S.prices[xs] || {})[sId];
+  if (!pb || !ps || pb.state !== 'ok' || ps.state !== 'ok' || !pb.askARS || !ps.bidARS) return null;
+  if (bId === hub && sId === hub) return null;                   // todo en el libro del hub: es un triángulo, no una ruta
+  const h1 = hop(xb, bId, hub), h2 = hop(xs, hub, sId);
+  if (!h1 || !h2) return { noNet:true };
+  let status = (h1.nofee || h2.nofee) ? 'nofee' : 'ok';
+
+  const usdArs = S.fx.usdArs || 1550;
+  const capARS = cap * usdArs;
+  const unitsBought = capARS / pb.askARS;
+  const unitsHub = unitsBought - h1.fee;
+  if (unitsHub <= 0) return null;
+  const unitsConv = unitsHub * conv.rate;
+  const unitsNet = unitsConv - h2.fee;
+  if (unitsNet <= 0) return null;
+
+  const pARS = unitsNet * ps.bidARS - capARS;
+  const pPct = (pARS / capARS) * 100;
+  if (status === 'ok' && (pPct > plausibleCap(bId, sId) || quoteSuspect(xb, bId, 'buy') || quoteSuspect(xs, sId, 'sell'))) status = 'suspect';
+
+  return {
+    coinId: XID, xb, xs, bId, sId, hub, status, pPct, pARS, pUSD: pARS / usdArs,
+    askARS: pb.askARS, bidARS: ps.bidARS,
+    spreadBruto: (ps.bidARS * conv.raw / pb.askARS - 1) * 100,
+    unitsBought, unitsHub, unitsConv, unitsNet,
+    net: h1.nofee ? null : h1, net2: h2.nofee ? null : h2, fee: h1.fee, fee2: h2.fee,
+    conv, tBuy: pb.t, tSell: ps.t,
+    p2p: EX[bId].p2p || EX[sId].p2p,
+  };
+}
+
+const CROSS_KEEP = 60;
+function computeCross() {
+  const cap = capUSD(), off = offSet(), hub = CFG.HUB;
+  const diag = { cross:true, off: !S.cfg.cross, hubOff: off.has(hub), noConv:[], down:[], noNet:0, nofee: !S.fees };
+  const mine = [], other = [];
+  if (S.cfg.cross) {
+    for (const xb of STABLES) for (const xs of STABLES) {
+      if (xb === xs) continue;
+      if (!S.feed[xb] || !S.feed[xs]) continue;
+      if (feedDown(xb) || feedDown(xs)) { for (const c of [xb, xs]) if (feedDown(c) && !diag.down.includes(c)) diag.down.push(c); continue; }
+      const conv = convRate(xb, xs);
+      if (!conv) { diag.noConv.push(COINS[xb].label + '→' + COINS[xs].label); continue; }
+      const P1 = S.prices[xb], P2 = S.prices[xs];
+      const buys = liveVenues(xb).filter(id => P1[id].askARS), sells = liveVenues(xs).filter(id => P2[id].bidARS);
+      for (const b of buys) for (const s of sells) {
+        const r = calcCross(xb, xs, b, s, cap, conv);
+        if (!r) continue;
+        const isMine = !off.has(b) && !off.has(s) && !off.has(hub);
+        if (r.noNet) { if (isMine) diag.noNet++; continue; }
+        (isMine ? mine : other).push(r);
+      }
+    }
+  }
+  mine.sort(rankRoutes);
+  diag.total = 0; diag.pos = 0;
+  for (const o of mine) if (o.status !== 'suspect') { diag.total++; if (o.pPct > 0) diag.pos++; }
+  S.opps[XID] = mine.slice(0, CROSS_KEEP);      // las combinaciones son miles: se conservan las mejores
+  S.one[XID] = [];
+  S.diag[XID] = diag;
+  S.hint[XID] = betterElsewhere(mine, other);
+}
+
+function computeAll() {
+  for (const coinId of COIN_IDS) computeCoin(coinId);
+  computeCross();
+}
+
+/* Clave de una ruta: identifica su estado de alerta y la nombra en el historial */
+function routeKey(o) {
+  return o.coinId === XID ? `x|${o.xb}@${o.bId}>${o.xs}@${o.sId}` : `${o.coinId}|${o.bId}|${o.sId}`;
+}
+
+/* Rutas operables de una pestaña, de mejor a peor (los datos sospechosos no cuentan) */
+function routesOf(tab) {
+  return (S.opps[tab] || []).filter(o => o.status !== 'suspect');
+}
+/* La mejor con retiro costeado: es la que se registra en el historial */
+function bestOk(tab) {
+  return (S.opps[tab] || []).find(o => o.status === 'ok') || null;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TABS
+══════════════════════════════════════════════════════════════ */
+function sw(id, el) {
+  document.querySelectorAll('.tp').forEach(p=>p.classList.remove('act'));
+  document.querySelectorAll('.bni').forEach(b=>b.classList.remove('act'));
+  $('tp-'+id).classList.add('act');
+  (el || document.querySelector(`.bni[data-t="${id}"]`)).classList.add('act');
+  S.activeTab = id;
+  if (id==='sim') populateSim();
+  if (id==='cfg') renderSettings();
+  if (id==='hist') histOpen();
+  if (id==='otros') monRender();
+  window.scrollTo(0, 0);
+}
+
+function setCoin(tab, el) {
+  S.activeCoin = tab;
+  S.tableSort = { col:'ask', dir:'asc' }; // reset sort on coin change
+  document.querySelectorAll('.ctab').forEach(t=>t.classList.remove('act'));
+  el.classList.add('act');
+  renderKPI(); renderPriceTable(); renderOpps(); renderCosts();
+  if (tab !== XID) {
+    const sc = $('sim-coin');
+    if (sc) sc.value = tab;
+    populateSim();
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RENDER FX + KPI
+══════════════════════════════════════════════════════════════ */
+function renderFX() {
+  txt('fx-b',   S.fx.blue    ? fmtA(S.fx.blue)    : '—');
+  txt('fx-o',   S.fx.oficial ? fmtA(S.fx.oficial) : '—');
+  txt('fx-m',   S.fx.mep     ? fmtA(S.fx.mep)     : '—');
+  txt('fx-u',   S.fx.usdtArs ? fmtA(S.fx.usdtArs) : '—');
+  txt('fx-c',   S.fx.ccl     ? fmtA(S.fx.ccl)     : '—');
+  txt('fx-btc', S.fx.btcUsd  ? '$' + fmtN(S.fx.btcUsd, 0) : '—');
+  txt('fx-eth', S.fx.ethUsd  ? '$' + fmtN(S.fx.ethUsd, 0) : '—');
+  txt('fx-btcars', S.fx.btcArs ? fmtCoinARS(S.fx.btcArs, 'btc') : '—');
+  txt('fx-ethars', S.fx.ethArs ? fmtCoinARS(S.fx.ethArs, 'eth') : '—');
+}
+
+/* Color de un resultado: verde si alcanza el umbral de alerta, amarillo si es positivo pero no llega, rojo si pierde */
+function pnlClass(o) {
+  if (!o) return 'none';
+  if (o.status === 'ok' && o.pPct >= thrPct()) return 'pos';
+  return o.pPct > 0 ? 'near' : 'neg';
+}
+
+const tabReady = tab => tab === XID ? STABLES.some(c => S.feed[c]) : !!S.feed[tab];
+
+/* Bajo cada moneda, su mejor ruta neta: todas a la vista a la vez */
+function renderTabs() {
+  for (const tab of TABS) {
+    const el = $('ctp-' + tab);
+    if (!el) continue;
+    const best = routesOf(tab)[0];
+    el.textContent = best ? fmtP(best.pPct)
+      : (tab === XID && !S.cfg.cross) ? 'no' : (tabReady(tab) ? '—' : '···');
+    el.className = 'ctp ' + pnlClass(best);
+  }
+}
+
+/* Nombre corto de una ruta */
+function routeName(o) {
+  return o.coinId === XID
+    ? `${exShort(o.bId)} ${COINS[o.xb].label} → ${exShort(o.sId)} ${COINS[o.xs].label}`
+    : `${exShort(o.bId)} → ${exShort(o.sId)}`;
+}
+function routeLong(o) {
+  return o.coinId === XID
+    ? `${COINS[o.xb].label} en ${EX[o.bId].name} → ${COINS[o.xs].label} en ${EX[o.sId].name}`
+    : `${EX[o.bId].name} → ${EX[o.sId].name}`;
+}
+
+function renderKPI() {
+  const tab = S.activeCoin, isX = tab === XID;
+  const label = tabLabel(tab);
+
+  // Mejor ruta y cantidad con ganancia de la pestaña elegida
+  const routes = routesOf(tab);
+  const best = routes[0];
+  const d = S.diag[tab];
+  const kb = $('kbest');
+  txt('kbestlbl', 'Mejor ruta neta · ' + label);
+  if (best) {
+    kb.textContent = fmtP(best.pPct);
+    txt('kbr', routeName(best));
+  } else {
+    kb.textContent = '—';
+    txt('kbr', (isX && !S.cfg.cross) ? 'rutas cruzadas desactivadas'
+      : !tabReady(tab) ? 'cargando…'
+      : (!isX && d && d.down) ? 'cotizaciones atrasadas' : 'sin rutas operables');
+  }
+  kb.className = 'kv ' + pnlClass(best);
+  txt('kcount', isX && d ? (d.pos || 0) : routes.filter(o => o.pPct > 0).length);
+  txt('ktotal', isX && d ? (d.total || 0) : routes.length);
+  txt('kcoin', label);
+
+  if (isX) {
+    const c = convRate('usdc', 'usdt');
+    txt('kkpilbl', 'USDC → USDT');
+    txt('kusdt', c ? fmtN(c.raw, 4) : '—');
+    txt('kusdtsub', 'libro de ' + EX[CFG.HUB].name);
+  } else {
+    txt('kkpilbl', label + '/ARS');
+    const fxVal = S.fx[tab + 'Ars'];
+    txt('kusdt', fxVal ? fmtCoinARS(fxVal, tab) : '—');
+    txt('kusdtsub', 'mediana del mercado');
+  }
+
+  if (S.fx.blue && S.fx.oficial)
+    txt('kspread', '+' + ((S.fx.blue / S.fx.oficial - 1) * 100).toFixed(1) + '%');
+
+  // Qué se pierde por los exchanges desactivados
+  const h = S.hint[tab], hint = $('khint');
+  if (h) {
+    const offs = [...new Set([h.bId, h.sId, ...(isX ? [h.hub] : [])].filter(id => !isActive(id)))];
+    hint.textContent = `Con ${offs.map(id => EX[id].name).join(' y ')}, que hoy no operás, la mejor ruta de ${label} sería ${fmtPc(h.pPct)} (${routeName(h)}).`;
+  }
+  hint.classList.toggle('show', !!h);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TABLA DE PRECIOS CON ORDENAMIENTO
+══════════════════════════════════════════════════════════════ */
+function sortTable(col) {
+  if (S.tableSort.col === col) {
+    S.tableSort.dir = S.tableSort.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    S.tableSort.col = col;
+    S.tableSort.dir = 'asc';
+  }
+  renderPriceTable();
+}
+
+function renderPriceTable() {
+  const tab = S.activeCoin;
+  if (tab === XID) return renderCrossBoard();
+  const coinId = tab, coin = COINS[coinId];
+  txt('sh-prices-lbl', 'Precios en vivo — ');
+  txt('sh-coin-lbl', coin.label);
+  const feed = S.feed[coinId];
+  if (!feed) {
+    $('ptbl-wrap').innerHTML = '<div class="ld"><div class="spin"></div></div>';
+    return;
+  }
+  const P = S.prices[coinId] || {};
+  const now = nowSec();
+  const down = feedDown(coinId);
+  const { col, dir } = S.tableSort;
+
+  const rows = EX_IDS.filter(id => P[id] && venueOn(id)).map(exId => {
+    const p = P[exId], bid = p.bidARS, ask = p.askARS;
+    return {
+      exId, ex: EX[exId], bid, ask,
+      spread: (bid != null && ask != null) ? ((ask - bid) / ask) * 100 : null,   // costo de entrar y salir en el mismo exchange
+      state: down && p.state === 'ok' ? 'stale' : p.state,
+      on: isActive(exId),
+      age: p.t ? now - p.t : null,
+    };
+  });
+
+  // Primero lo que entra al cálculo; después lo que no operás y, al final, lo viejo o inválido
+  const grp = r => r.state !== 'ok' ? 2 : r.on ? 0 : 1;
+  rows.sort((a, b) => {
+    if (grp(a) !== grp(b)) return grp(a) - grp(b);
+    if (col === 'ex') {
+      const c = a.ex.short.localeCompare(b.ex.short);
+      return dir === 'asc' ? c : -c;
+    }
+    const av = a[col], bv = b[col];
+    if (av == null && bv == null) return 0;
+    if (av == null) return 1;
+    if (bv == null) return -1;
+    return dir === 'asc' ? av - bv : bv - av;
+  });
+
+  const th = (c, label) => {
+    const sorted = col === c;
+    const arrow = sorted ? (dir === 'asc' ? '↑' : '↓') : '↕';
+    return `<th class="${sorted?'sorted':''}" onclick="sortTable('${c}')">${label}<span class="sar">${arrow}</span></th>`;
+  };
+
+  const thead = `<thead><tr>
+    ${th('ex','Exchange')}
+    ${th('bid','Venta')}
+    ${th('ask','Compra')}
+    ${th('spread','Spread')}
+    <th></th>
+  </tr></thead>`;
+
+  const tbody = rows.map(({ exId, ex, bid, ask, spread, state, on, age }) => {
+    const href = buildLink(exId);
+    // En P2P la marca de la plaza ocupa el lugar de LIVE, para que la fila entre en una pantalla angosta
+    const badge = ex.p2p
+      ? '<span class="p2p-badge">P2P</span>' + (state === 'stale' ? 'viejo ' : !on ? 'fuera ' : '')
+      : state === 'stale' ? '<span class="old-badge">VIEJO</span>'
+      : state === 'bad' ? '<span class="no-badge">INVÁLIDA</span>'
+      : !on ? '<span class="no-badge">NO OPERO</span>'
+      : '<span class="live-badge">LIVE</span>';
+    const p2p = '';
+    const ageTxt = age == null ? '' : fmtAge(age);
+    return `<tr class="${state !== 'ok' || !on ? 'nd' : ''}">
+      <td>
+        <div class="exnm">${ex.short}</div>
+        <div class="exsub">${p2p}${badge}${ageTxt}</div>
+      </td>
+      <td class="pbid">${fmtCoinARS(bid, coinId)}</td>
+      <td class="pask">${fmtCoinARS(ask, coinId)}</td>
+      <td class="pspread neu">${spread != null ? spread.toFixed(2) + '%' : '—'}</td>
+      <td>
+        <div class="ptbl-acts">
+          <button class="ptbl-act buy" onclick="event.preventDefault();window.location.href='${href}'">▲ Cmp</button>
+          <button class="ptbl-act sell" onclick="event.preventDefault();window.location.href='${href}'">▼ Vnd</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  const hasP2P = EX_IDS.some(id => P[id] && EX[id].p2p);
+  const foot = `<div class="ptbl-foot">Precios para operar ${esc(feed.vol)} ${coin.unit} (≈ U$D ${fmtN(capUSD(), 0)}) · CriptoYa actualizó hace ${fmtAge(now - feed.refT)}` +
+    (!S.cfg.p2p && hasP2P ? ' · Los anuncios P2P están fuera: se suman desde Ajustes' : '') + '</div>';
+  $('ptbl-wrap').innerHTML = rows.length
+    ? `<table class="ptbl">${thead}<tbody>${tbody}</tbody></table>${foot}`
+    : `<div class="em">Ningún exchange de la lista cotiza ${coin.label} en este momento.</div>`;
+}
+
+/* En la pestaña CRUZ no hay un precio único: se ve dónde conviene comprar y dónde vender entre las tres stablecoins */
+function renderCrossBoard() {
+  txt('sh-prices-lbl', 'Dónde comprar y dónde vender — ');
+  txt('sh-coin-lbl', 'stablecoins');
+  const wrap = $('ptbl-wrap');
+  if (!S.cfg.cross) {
+    wrap.innerHTML = '<div class="em">Las rutas cruzadas están desactivadas. Se activan en Ajustes.</div>';
+    return;
+  }
+  if (!tabReady(XID)) { wrap.innerHTML = '<div class="ld"><div class="spin"></div></div>'; return; }
+  const buys = [], sells = [];
+  for (const c of STABLES) {
+    if (!S.feed[c] || feedDown(c)) continue;
+    const P = S.prices[c];
+    for (const id of liveVenues(c)) {
+      if (!isActive(id)) continue;
+      if (P[id].askARS) buys.push({ id, c, v: P[id].askARS });
+      if (P[id].bidARS) sells.push({ id, c, v: P[id].bidARS });
+    }
+  }
+  buys.sort((a, b) => a.v - b.v);
+  sells.sort((a, b) => b.v - a.v);
+  const li = r => `<div class="xbr"><span class="xbn">${exShort(r.id)} <i>${COINS[r.c].label}</i></span><span class="xbv">${fmtCoinARS(r.v, r.c)}</span></div>`;
+  const convs = [['usdc', 'usdt'], ['usdt', 'usdc'], ['usdt', 'dai'], ['dai', 'usdt']].map(([a, b]) => {
+    const c = convRate(a, b);
+    return `<div class="xbr"><span class="xbn">${COINS[a].label} → ${COINS[b].label}</span><span class="xbv">${c ? fmtN(c.raw, 4) : 'sin precio'}</span></div>`;
+  }).join('');
+  wrap.innerHTML = `<div class="xb">
+      <div class="xbc"><div class="xbh">Comprar más barato</div>${buys.slice(0, 5).map(li).join('') || '<div class="xbe">sin datos</div>'}</div>
+      <div class="xbc"><div class="xbh">Vender más caro</div>${sells.slice(0, 5).map(li).join('') || '<div class="xbe">sin datos</div>'}</div>
+    </div>
+    <div class="xbconv"><div class="xbh">Conversión en ${EX[CFG.HUB].name} · libro en vivo</div>${convs}</div>
+    <div class="ptbl-foot">Cada ruta compra una stablecoin, la convierte en ${EX[CFG.HUB].name} y vende la otra. Se descuentan los dos retiros y ${fmtN(CFG.SWAP_FEE_PCT, 2)}% por conversión (comisión estándar: revisá la de tu cuenta).</div>`;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RENDER OPPS
+══════════════════════════════════════════════════════════════ */
+function renderDiag() {
+  const el = $('diag');
+  if (!el) return;
+  const tab = S.activeCoin, d = S.diag[tab], now = nowSec();
+  const parts = [];
+  if (tab === XID) {
+    if (d && S.cfg.cross && tabReady(XID)) {
+      if (d.hubOff) parts.push(`⚠ Las rutas cruzadas convierten en ${EX[CFG.HUB].name}, que está desactivado en Mis exchanges: no hay rutas propias.`);
+      if (d.down.length) parts.push('⚠ Cotizaciones atrasadas en CriptoYa: ' + d.down.map(c => COINS[c].label).join(', ') + '.');
+      if (d.noConv.length) parts.push('⚠ Sin precio de conversión en vivo para ' + d.noConv.join(', ') + ': esas rutas quedan fuera.');
+      if (d.nofee) parts.push('⚠ Sin datos de comisiones de retiro: las rutas no descuentan la red y las alertas quedan en pausa.');
+      else if (d.noNet) parts.push(`ℹ ${d.noNet} combinaciones descartadas: falta una red en común para llegar a ${EX[CFG.HUB].name} o para salir.`);
+    }
+  } else {
+    const coin = COINS[tab], P = S.prices[tab] || {};
+    if (d && S.feed[tab]) {
+      if (d.down) parts.push(`⚠ La última cotización de ${coin.label} en CriptoYa es de hace ${fmtAge(d.lag)}: rutas y alertas en pausa hasta que vuelva a actualizar. Si pasa con todas las monedas, revisá la hora del teléfono.`);
+      if (d.stale.length) parts.push('⚠ Fuera del cálculo por cotización vieja: ' +
+        d.stale.map(id => `${exShort(id)} (${fmtAge(now - P[id].t)})`).join(', ') + '.');
+      if (d.bad.length) parts.push('⚠ Cotización inválida: ' + d.bad.map(id => exShort(id)).join(', ') + '.');
+      if (d.nofee) parts.push('⚠ Sin datos de comisiones de retiro: las rutas no descuentan la red y las alertas quedan en pausa.');
+      else if (d.noNet) parts.push(`ℹ ${d.noNet} rutas ${S.cfg.mode === 'both' ? 'sin reequilibrio posible' : 'descartadas'}: los dos exchanges no comparten una red de retiro para ${coin.label}.`);
+    }
+  }
+  el.innerHTML = parts.join('<br>');
+  el.classList.toggle('show', parts.length > 0);
+}
+
+/* Texto del traslado de una ruta, según el modo de operación */
+function transferText(o) {
+  const both = S.cfg.mode === 'both';
+  const unit = o.coinId === XID ? COINS[o.xb].unit : COINS[o.coinId].unit;
+  const one = (net, fee, u, n) => {
+    if (!net) return `Retiro${n} sin costear`;
+    if (net.internal) return `Paso interno${n}: sin costo`;
+    return `Retiro${n} por <b>${esc(netLabel(net.name))}</b>: ${trimNum(fee)} ${u}`;
+  };
+  if (o.coinId === XID) {
+    const u2 = COINS[o.xs].unit;
+    return `${one(o.net, o.fee, unit, ' 1')} · conversión ${COINS[o.xb].label}→${COINS[o.xs].label} en ${EX[o.hub].name} a ${fmtN(o.conv.raw, 4)} · ${one(o.net2, o.fee2, u2, ' 2')}`;
+  }
+  if (!o.net) return 'Retiro sin costear';
+  if (o.net.internal) return both
+    ? 'Misma plataforma: las dos puntas se operan a la vez y el saldo se reacomoda sin costo'
+    : 'Misma plataforma: paso interno, sin red y sin costo';
+  const fee = `${trimNum(o.fee)} ${unit} (${o.feePct.toFixed(2)}% del capital)`;
+  return both
+    ? `Las dos puntas a la vez dejan <b>${fmtP(o.spreadBruto)}</b> · reequilibrar por ${esc(netLabel(o.net.name))} cuesta ${fee}`
+    : `Retiro por <b>${esc(netLabel(o.net.name))}</b>: ${fee}`;
+}
+
+function oppCard(o, thr, now) {
+  const isX = o.coinId === XID;
+  const unitId = isX ? o.xs : o.coinId;
+  const coin = COINS[unitId];
+  const one = o.status === 'oneshot';
+  const sus = o.status === 'suspect';
+  const ip = !sus && !one && o.pPct >= thr, in_ = !sus && o.pPct > 0 && !ip;
+  const pc = ip ? 'pos' : in_ ? 'near' : 'neg';
+  const cc = sus ? 'suspect' : ip ? 'profit' : in_ ? 'near' : '';
+  const sg = o.pPct >= 0 ? '+' : '−';
+  const flags = (sus ? '<span class="oppflag">DATO SOSPECHOSO</span>' : '')
+    + (o.status === 'nofee' ? '<span class="oppflag">SIN FEE DE RED</span>' : '')
+    + (one ? '<span class="oppflag info">UNA SOLA VEZ</span>' : '')
+    + (o.p2p ? '<span class="oppflag info">P2P</span>' : '');
+  const tag = c => `<span class="oppcoin">${COINS[c].label}</span>`;
+  const head = isX
+    ? `<span class="oppex">${exShort(o.bId)} ${tag(o.xb)}</span><span class="opparr">→</span><span class="oppex">${exShort(o.sId)} ${tag(o.xs)}</span>`
+    : `<span class="oppex">${exShort(o.bId)}</span><span class="opparr">→</span><span class="oppex">${exShort(o.sId)}</span>
+       <span style="font-size:9px;color:var(--muted2);font-family:var(--mono)">${coin.label}</span>`;
+  const ages = `cotizaciones de hace ${fmtAge(now - o.tBuy)} y ${fmtAge(now - o.tSell)}`;
+  if (one) {
+    return `<div class="oppc ${cc}">
+      <div class="oppt"><div class="oppr">${head}${flags}</div><span class="opppnl ${pc}">${fmtP(o.pPct)}</span></div>
+      <div class="oppnet">Comprar @ ${fmtCoinARS(o.askARS, o.coinId)} · vender @ ${fmtCoinARS(o.bidARS, o.coinId)} · ${ages}</div>
+    </div>`;
+  }
+  const key = routeKey(o);
+  return `<div class="oppc ${cc}">
+    <div class="oppt">
+      <div class="oppr">${head}${flags}</div>
+      <span class="opppnl ${pc}">${fmtP(o.pPct)}</span>
+    </div>
+    <div class="oppdet">
+      <div class="opdd"><div class="oddl">Ask compra</div><div class="oddv">${fmtCoinARS(o.askARS, isX ? o.xb : o.coinId)}</div></div>
+      <div class="opdd"><div class="oddl">Bid venta</div><div class="oddv">${fmtCoinARS(o.bidARS, unitId)}</div></div>
+      <div class="opdd"><div class="oddl">Dif. precios</div><div class="oddv ${o.spreadBruto >= 0 ? 'pos' : 'neg'}">${o.spreadBruto >= 0 ? '+' : ''}${o.spreadBruto.toFixed(2)}%</div></div>
+      <div class="opdd"><div class="oddl">Gan. ARS</div><div class="oddv ${o.pPct >= 0 ? 'pos' : 'neg'}">${sg}${fmtA(Math.abs(o.pARS))}</div></div>
+      <div class="opdd"><div class="oddl">Gan. USD</div><div class="oddv ${o.pPct >= 0 ? 'pos' : 'neg'}">${sg}${fmtU(o.pUSD)}</div></div>
+      <div class="opdd"><div class="oddl">${coin.unit} netos</div><div class="oddv">${o.unitsNet.toFixed(coin.dec)}</div></div>
+    </div>
+    <div class="oppnet">${transferText(o)} · ${ages}${o.p2p ? ' · precio de anuncio P2P: verificá límites y medio de pago' : ''}</div>
+    <div class="oppacts">
+      <a class="opabt buy" href="${buildLink(o.bId)}" onclick="openExchange(event,this)">🟢 Comprar<br><span style="font-size:9px;font-weight:400">${exShort(o.bId)}</span></a>
+      <a class="opabt sell" href="${buildLink(o.sId)}" onclick="openExchange(event,this)">🔴 Vender<br><span style="font-size:9px;font-weight:400">${exShort(o.sId)}</span></a>
+      <div class="opabt sig" onclick="copySignal('${key}')">📋 Señal<br><span style="font-size:9px;font-weight:400">Copiar</span></div>
+    </div>
+  </div>`;
+}
+
+function renderOpps() {
+  renderDiag();
+  const tab = S.activeCoin;
+  const opps = S.opps[tab] || [], one = S.one[tab] || [];
+  const thr = thrPct(), now = nowSec();
+
+  if (tab === XID && !S.cfg.cross) {
+    $('oppl').innerHTML = '<div class="em">Rutas cruzadas desactivadas.</div>';
+    return;
+  }
+  if (!tabReady(tab)) {
+    $('oppl').innerHTML = '<div class="ld"><div class="spin"></div><div style="color:var(--muted2);font-size:12px">Calculando rutas...</div></div>';
+    return;
+  }
+  let html = opps.length
+    ? opps.slice(0, 20).map(o => oppCard(o, thr, now)).join('')
+    : `<div class="em">Sin rutas operables para ${tabLabel(tab)} entre tus exchanges en este momento.</div>`;
+  if (one.length) {
+    html += `<div class="subh">Sin red en común · una sola vez</div>
+      <div class="subnote">Se pueden operar con el saldo que ya tengas en cada lado, pero después no hay cómo reequilibrar por transferencia. No disparan alarma ni cuentan en el historial.</div>`
+      + one.map(o => oppCard(o, thr, now)).join('');
+  }
+  $('oppl').innerHTML = html;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ALERTAS
+   Solo rutas operables entre mis exchanges (cotizaciones vigentes + retiro costeado) cuya
+   ganancia sigue ahí después de que los dos exchanges volvieron a cotizar: un dato suelto
+   no alcanza. Una alarma por ciclo: la mejor ruta.
+══════════════════════════════════════════════════════════════ */
+function checkAlerts() {
+  const thr = thrPct(), cap = capUSD(), now = Date.now();
+  const seen = new Set(), batch = [];
+  for (const tab of TABS) {
+    for (const o of (S.opps[tab] || [])) {
+      if (o.status !== 'ok' || o.pPct < thr) continue;
+      const k = routeKey(o);
+      seen.add(k);
+      let st = S.astate.get(k);
+      if (!st) { st = { tb:0, ts:0, lastAt:0, lastPct:-Infinity }; S.astate.set(k, st); }
+      if (!st.tb) { st.tb = o.tBuy; st.ts = o.tSell; }      // primera vez que cumple: se anotan las cotizaciones que la originaron
+      if (!(o.tBuy > st.tb && o.tSell > st.ts)) continue;   // todavía no volvieron a cotizar los dos exchanges
+      const cooled = now - st.lastAt >= CFG.ALERT_COOLDOWN_MS;
+      const improved = o.pPct >= st.lastPct + CFG.REALERT_STEP_PCT;
+      if (cooled || improved) batch.push({ o, st });
+    }
+  }
+  // Una ruta que deja de cumplir pierde la confirmación acumulada
+  for (const [k, st] of S.astate) if (!seen.has(k)) { st.tb = 0; st.ts = 0; }
+  if (!batch.length) return;
+
+  batch.sort((a, b) => b.o.pPct - a.o.pPct);
+  for (const { o, st } of batch) { st.lastAt = now; st.lastPct = o.pPct; }
+  // Un mismo precio fuera de lugar habilita muchas rutas a la vez: se anotan las mejores y se cuenta el resto
+  const shown = Math.min(batch.length, CFG.ALERT_LOG_PER_CYCLE);
+  for (let i = shown - 1; i >= 0; i--) addAlertLog(batch[i].o, cap, i === shown - 1 ? batch.length - shown : 0);   // la mejor queda arriba
+  showAlert(batch[0].o, cap, batch.length - 1);
+}
+
+/* Pasos de una ruta en texto plano, para la alarma, el registro y la señal */
+function routeSteps(o) {
+  const both = S.cfg.mode === 'both';
+  const isX = o.coinId === XID;
+  const cb = COINS[isX ? o.xb : o.coinId], cs = COINS[isX ? o.xs : o.coinId];
+  const be = EX[o.bId], se = EX[o.sId];
+  const move = (net, fee, unit, to) => !net ? `Llevar a ${to} (retiro sin costear)`
+    : net.internal ? `Pasar a ${to} por transferencia interna, sin costo`
+    : `Llevar a ${to} por ${netLabel(net.name)} · retiro ${trimNum(fee)} ${unit}`;
+  const buy = `Comprar ${isX ? cb.label + ' ' : ''}en ${be.name} @ ${fmtCoinARS(o.askARS, isX ? o.xb : o.coinId)}`;
+  const sell = `Vender ${isX ? cs.label + ' ' : ''}en ${se.name} @ ${fmtCoinARS(o.bidARS, isX ? o.xs : o.coinId)}`;
+  if (isX) {
+    const hub = EX[o.hub].name;
+    return [buy,
+      `${move(o.net, o.fee, cb.unit, hub)} y convertir a ${cs.label} a ${fmtN(o.conv.raw, 4)}`,
+      move(o.net2, o.fee2, cs.unit, se.name), sell];
+  }
+  if (both) {
+    const reb = !o.net ? 'Reequilibrio sin costear'
+      : o.net.internal ? 'El saldo se reacomoda dentro de la misma plataforma, sin costo'
+      : `Reequilibrar después por ${netLabel(o.net.name)} · ${trimNum(o.fee)} ${cb.unit}`;
+    return [`A la vez: ${buy.charAt(0).toLowerCase() + buy.slice(1)}`, `y ${sell.charAt(0).toLowerCase() + sell.slice(1)}`, reb];
+  }
+  return [buy, move(o.net, o.fee, cb.unit, se.name), sell];
+}
+
+/* Abre el cartel de alarma con sonido. Lo usan las rutas y el monitor triangular. */
+function raiseOverlay(a) {
+  playAlarm();
+  txt('amroute', a.route);
+  txt('ampnl', a.pnl);
+  $('amdet').textContent = a.det;
+  const b = $('ambuy'), s = $('amsell');
+  b.href = a.buyHref; b.textContent = a.buyLbl || '🟢 COMPRAR AHORA';
+  s.href = a.sellHref; s.textContent = a.sellLbl || '🔴 VENDER AHORA';
+  $('aov').classList.add('show');
+  // El WebView de Android no expone Notification: se consulta sin asumir que existe
+  if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+    try {
+      const n = new Notification('🚨 ArbitrAR — OPORTUNIDAD', { body: a.route + '\n' + a.pnl + ' neto', requireInteraction: true });
+      n.onclick = () => { window.focus(); $('aov').classList.add('show'); };
+    } catch(e) {}
+  }
+}
+
+function showAlert(o, cap, more) {
+  const now = nowSec();
+  raiseOverlay({
+    route: `[${tabLabel(o.coinId)}] ${routeLong(o)}`,
+    pnl: fmtP(o.pPct),
+    det: routeSteps(o).join('\n') + '\n' +
+      `Capital U$D ${cap} → Ganancia ${fmtA(o.pARS)} ARS\n` +
+      `Cotizaciones de hace ${fmtAge(now - o.tBuy)} y ${fmtAge(now - o.tSell)}` +
+      (o.p2p ? '\nAnuncio P2P: verificá límites y medio de pago' : '') +
+      (more > 0 ? `\n+${more} ruta${more > 1 ? 's más cumplen' : ' más cumple'} el umbral: las mejores están en Alertas` : ''),
+    buyHref: buildLink(o.bId), sellHref: buildLink(o.sId),
+  });
+}
+
+function closeAov() { $('aov').classList.remove('show'); }
+
+/* Entrada en la pestaña Alertas. `a` = { tag, title, lines[], btns:[{cls,href,label}] } */
+function pushAlertLog(a) {
+  const log = $('alog');
+  if (log.querySelector('.em')) log.innerHTML = '';
+  const d = document.createElement('div');
+  d.className = 'ali';
+  d.innerHTML = `<div class="alit">${nowt()} · ${esc(a.tag)}</div>
+    <div class="alth">${esc(a.title)}</div>
+    <div class="ald">${a.lines.map(esc).join('<br>')}</div>
+    <div class="albtns">${a.btns.map(b => `<a class="albtn ${b.cls}" href="${b.href}" onclick="openExchange(event,this)">${esc(b.label)}</a>`).join('')}</div>`;
+  log.insertBefore(d, log.firstChild);
+  while (log.children.length > 100) log.removeChild(log.lastChild);
+  $('alerttab').style.color = 'var(--green)';
+}
+
+function addAlertLog(o, cap, rest) {
+  pushAlertLog({
+    tag: tabLabel(o.coinId),
+    title: `+${o.pPct.toFixed(2)}% — ${routeName(o)}`,
+    lines: [...routeSteps(o), `Ganancia: ${fmtA(o.pARS)} ARS · ${fmtU(o.pUSD)} (capital U$D ${cap})`]
+      .concat(rest > 0 ? [`En el mismo ciclo, otras ${rest} rutas con menor ganancia también llegaron al umbral.`] : []),
+    btns: [
+      { cls:'buy',  href: buildLink(o.bId), label: '🟢 Comprar en ' + exShort(o.bId) },
+      { cls:'sell', href: buildLink(o.sId), label: '🔴 Vender en ' + exShort(o.sId) },
+    ],
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SEÑAL
+══════════════════════════════════════════════════════════════ */
+function findRoute(key) {
+  for (const tab of TABS) {
+    const o = (S.opps[tab] || []).find(x => routeKey(x) === key);
+    if (o) return o;
+  }
+  return null;
+}
+
+function copySignal(key) {
+  const o = findRoute(key);
+  if (!o) return;
+  const cap = capUSD(), now = nowSec();
+  const flag = o.status === 'suspect' ? '\n\n⚠️ DATO SOSPECHOSO: ganancia fuera de rango, verificar a mano.' : '';
+  const sg = o.pPct >= 0 ? '+' : '−';
+  const steps = routeSteps(o).map((s, i) => `${i + 1}. ${s}`).join('\n');
+  const t = `🚨 SEÑAL — ArbitrAR [${tabLabel(o.coinId)}]\n\n${o.pPct >= 0 ? '✅' : '🔻'} P&L neto: ${fmtP(o.pPct)}\n${routeLong(o)}\n\n${steps}\n\n` +
+    `${EX[o.bId].name}: ${EX[o.bId].url}\n${EX[o.sId].name}: ${EX[o.sId].url}\n\n` +
+    `💰 Capital: U$D ${cap}\n📈 Resultado: ${sg}${fmtA(Math.abs(o.pARS))} ARS · ${sg}${fmtU(o.pUSD)}\n` +
+    `⏱ Cotizaciones de hace ${fmtAge(now - o.tBuy)} y ${fmtAge(now - o.tSell)}${flag}\n\n⚠️ Precios con comisión de trading incluida. Verificar antes de operar.`;
+  navigator.clipboard?.writeText(t).catch(() => {});
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SIMULADOR
+══════════════════════════════════════════════════════════════ */
+function populateSim() {
+  const coinId = $('sim-coin')?.value || 'usdt';
+  const P = S.prices[coinId] || {};
+  let ids = EX_IDS.filter(id => P[id] && venueOn(id));
+  if (!ids.length) ids = EX_IDS.filter(venueOn);          // todavía sin datos: se listan todos
+  const sig = coinId + ':' + ids.join(',');
+  if (sig !== S.simSig) {
+    S.simSig = sig;
+    const sb = $('sb'), ss = $('ss');
+    const prevB = sb.value, prevS = ss.value;
+    const html = ids.map(id => `<option value="${id}">${EX[id].name}</option>`).join('');
+    sb.innerHTML = html;
+    ss.innerHTML = html;
+    if (ids.includes(prevB)) sb.value = prevB;
+    if (ids.includes(prevS) && prevS !== sb.value) ss.value = prevS;
+    else { const other = ids.find(id => id !== sb.value); if (other) ss.value = other; }
+  }
+  simulate();
+}
+
+function simulate() {
+  const coinId = $('sim-coin')?.value || 'usdt';
+  const coin = COINS[coinId];
+  const bId = $('sb')?.value, sId = $('ss')?.value;
+  const capIn = parseFloat($('sc')?.value), cap = capIn > 0 ? capIn : 1000;
+  const el = $('simr'), btns = $('simbtns'), sn = $('sn');
+  const both = S.cfg.mode === 'both';
+  $('simtotal')?.remove();
+  txt('sn-lbl', both ? 'Red para reequilibrar' : 'Red de transferencia');
+  const stop = (msg, red) => {
+    el.innerHTML = `<div class="em"${red ? ' style="color:var(--red)"' : ''}>${msg}</div>`;
+    btns.style.display = 'none';
+  };
+  if (!bId || !sId || !S.feed[coinId]) return stop('Esperando datos de mercado...');
+  if (bId === sId) return stop('Seleccioná exchanges distintos.', true);
+  const P = S.prices[coinId] || {};
+  const pb = P[bId], ps = P[sId];
+  const eb = EX[bId], es = EX[sId];
+  if (!pb || !pb.askARS) return stop(`${eb.name} no publica precio de compra de ${coin.label}.`);
+  if (!ps || !ps.bidARS) return stop(`${es.name} no publica precio de venta de ${coin.label}.`);
+
+  // Cómo pasa la moneda: interno si es la misma plataforma; si no, por una red en común
+  const internal = sameGroup(bId, sId);
+  const nets = (!internal && S.fees) ? networksFor(coinId, bId, sId) : [];
+  const nsig = [coinId, bId, sId, S.fees ? 1 : 0, internal ? 'i' : nets.map(n => n.name + '=' + n.fee).join(',')].join('|');
+  if (nsig !== S.simNetSig) {
+    S.simNetSig = nsig;
+    const prev = sn.value;
+    sn.innerHTML = internal ? '<option value="">Misma plataforma · sin costo</option>'
+      : nets.length
+      ? `<option value="">Auto · ${esc(netLabel(nets[0].name))}</option>` +
+        nets.map(n => `<option value="${esc(n.name)}">${esc(netLabel(n.name))} — ${trimNum(n.fee)} ${coin.unit}</option>`).join('')
+      : `<option value="">${S.fees ? 'Sin red en común' : 'Sin datos de comisiones'}</option>`;
+    if (nets.some(n => n.name === prev)) sn.value = prev;
+  }
+  const net = internal ? { name:'INTERNAL', fee:0, internal:true } : (nets.find(n => n.name === sn.value) || nets[0] || null);
+  const fee = net ? net.fee : 0;
+
+  const usdArs = S.fx.usdArs || 1550;
+  const capARS = cap * usdArs;
+  const ub = capARS / pb.askARS;
+  const un = Math.max(0, ub - fee);
+  const revARS = un * ps.bidARS;
+  const pARS = revARS - capARS, pPct = (pARS / capARS) * 100, pUSD = pARS / usdArs;
+  const cls = pPct > 0 ? 'pos' : 'neg';
+  const sg = pPct >= 0 ? '+' : '−';
+  const now = nowSec();
+
+  // Todo lo que impide operar esta ruta tal como se ve
+  const warn = [];
+  if (feedDown(coinId)) warn.push(`La última cotización de ${coin.label} en CriptoYa es de hace ${fmtAge(feedLag(coinId))}: no es operable.`);
+  for (const [ex, p] of [[eb, pb], [es, ps]]) {
+    if (p.state === 'stale') warn.push(`La cotización de ${ex.name} no se actualiza hace ${fmtAge(now - p.t)}: no es operable.`);
+    else if (p.state === 'bad') warn.push(`La cotización de ${ex.name} es inválida (incompleta o con venta por encima de compra).`);
+  }
+  if (!internal) {
+    if (!S.fees) warn.push('Sin datos de comisiones de retiro: el resultado no descuenta la red.');
+    else if (!net) warn.push(both
+      ? `${eb.name} y ${es.name} no comparten una red de retiro para ${coin.label}: se puede operar una vez con el saldo de cada lado, pero no reequilibrar por transferencia.`
+      : `${eb.name} y ${es.name} no comparten una red de retiro para ${coin.label}: la transferencia no está verificada y no se descuenta.`);
+  }
+  if (eb.p2p || es.p2p) warn.push('Hay una punta P2P: el precio es el de un anuncio. Verificá límites y medio de pago antes de operar.');
+  if (!isActive(bId) || !isActive(sId)) warn.push('Esta ruta usa un exchange que tenés desactivado en Mis exchanges: no entra en rutas ni alertas.');
+  if (!warn.length && pPct > plausibleCap(bId, sId)) warn.push('Ganancia fuera de rango: tratala como dato sospechoso y verificá los precios en cada exchange.');
+
+  const spr = p => (p.askARS && p.bidARS) ? ((p.askARS - p.bidARS) / p.askARS * 100).toFixed(2) + '%' : '—';
+  const feeLbl = both ? 'Reequilibrio' : 'Retiro';
+  const feeRow = net
+    ? `<div class="srr"><span class="srl">− ${feeLbl} ${eb.short}${net.internal ? ' (interno)' : ' por ' + esc(netLabel(net.name))}</span><span class="srv ${fee ? 'neg' : 'pos'}">${fee ? '−' + trimNum(fee) + ' ' + coin.unit : 'Sin cargo'}</span></div>`
+    : `<div class="srr"><span class="srl">− ${feeLbl} ${eb.short}</span><span class="srv neg">sin costear</span></div>`;
+
+  el.innerHTML = `
+    ${warn.map(w => `<div class="srw">⚠ ${w}</div>`).join('')}
+    <div class="srr"><span class="srl">Ask compra (${eb.name})</span><span class="srv">${fmtCoinARS(pb.askARS, coinId)}</span></div>
+    <div class="srr" style="opacity:.6;font-size:10px;padding:3px 0 7px"><span class="srl" style="font-style:italic">Spread propio de ${eb.short}: ${spr(pb)}</span><span class="srl" style="font-style:italic">hace ${fmtAge(now - pb.t)}</span></div>
+    <div class="srr"><span class="srl">${coin.unit} a comprar</span><span class="srv">${ub.toFixed(coin.dec)} ${coin.unit}</span></div>
+    ${feeRow}
+    <div class="srr"><span class="srl">${coin.unit} netos a vender</span><span class="srv">${un.toFixed(coin.dec)} ${coin.unit}</span></div>
+    <div class="srr"><span class="srl">Bid venta (${es.name})</span><span class="srv">${fmtCoinARS(ps.bidARS, coinId)}</span></div>
+    <div class="srr" style="opacity:.6;font-size:10px;padding:3px 0 7px"><span class="srl" style="font-style:italic">Spread propio de ${es.short}: ${spr(ps)}</span><span class="srl" style="font-style:italic">hace ${fmtAge(now - ps.t)}</span></div>
+    <div class="srr"><span class="srl">Ingreso bruto ARS</span><span class="srv">${fmtA(revARS)}</span></div>
+    <div class="srr"><span class="srl">Capital invertido</span><span class="srv">−${fmtA(capARS)}</span></div>
+    <div class="srr"><span class="srl">Gan. ARS</span><span class="srv ${cls}">${sg}${fmtA(Math.abs(pARS))}</span></div>
+    <div class="srr"><span class="srl">Gan. USD</span><span class="srv ${cls}">${sg}${fmtU(pUSD)}</span></div>`;
+
+  const tot = document.createElement('div');
+  tot.className = 'simtotal'; tot.id = 'simtotal';
+  tot.innerHTML = `<div><div class="stl">P&L NETO [${coin.label}]</div><div style="font-size:10px;color:var(--muted2)">${sg}${fmtA(Math.abs(pARS))} · ${sg}${fmtU(pUSD)}</div></div><div class="stv ${cls}">${sg}${Math.abs(pPct).toFixed(2)}%</div>`;
+  el.parentNode.insertBefore(tot, btns);
+
+  $('sbb').href = buildLink(bId);
+  $('sbs').href = buildLink(sId);
+  btns.style.display = 'grid';
+  $('sbb').textContent = `🟢 Comprar en ${eb.short}`;
+  $('sbs').textContent = `🔴 Vender en ${es.short}`;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   HISTORIAL
+   Una muestra por minuto de la mejor ruta neta de cada moneda (la última del minuto, sin
+   elegir la más alta: así el tiempo sobre el umbral no sale inflado).
+   Dentro de la app lo graba BotService, también con la app cerrada, y se lee por el puente.
+   En un navegador lo graba esta página mientras esté abierta, con el mismo formato:
+     minuto,usdt,usdc,dai,btc,eth,cruz[,rutas]     valores en centésimas de %; vacío = sin dato
+     #c,minuto,firma                                marca un cambio de configuración
+══════════════════════════════════════════════════════════════ */
+const HIST = {
+  KEY: 'arbitrar.h.',       // + día (minuto / 1440)
+  SIG_KEY: 'arbitrar.h.sig',
+  KEEP_DAYS_WEB: 30,
+  KEEP_DAYS_APP: 90,        // lo que conserva BotService
+  GAP_MIN: 2,               // minutos sin dato que no cortan una ventana
+  SERIES: '#448aff',        // único tono de serie: el azul de la app sobre la tarjeta
+  HOVER: '#8ab4ff',
+};
+S.hist = { cur:null, coin:'all', period:1440, thr:null, data:null, loadedAt:0, open:{}, day:0 };
+
+const histNative = () => {
+  const n = window.ArbitrARNative;
+  return n && typeof n.getHistory === 'function' ? n : null;
+};
+const minuteNow = () => Math.floor(nowSec() / 60);
+const dayOf = m => Math.floor(m / 1440);
+
+/* ── Grabación (solo fuera de la app) ── */
+function histLine(minute) {
+  const vals = [], routes = [];
+  for (const tab of TABS) {
+    const o = bestOk(tab);
+    vals.push(o ? Math.round(o.pPct * 100) : '');
+    if (o && o.pPct >= 0) routes.push(routeKey(o).replace('|', ':').replace('|', '>'));
+  }
+  return minute + ',' + vals.join(',') + (routes.length ? ',' + routes.join('|') : '');
+}
+
+function histAppend(minute, line) {
+  const k = HIST.KEY + dayOf(minute);
+  const write = () => {
+    let prev = localStorage.getItem(k);
+    if (!prev && line.charCodeAt(0) !== 35) {    // día nuevo: primero la configuración vigente, para leerlo sin mirar días anteriores
+      const sig = localStorage.getItem(HIST.SIG_KEY);
+      if (sig) prev = '#c,' + minute + ',' + sig;
+    }
+    localStorage.setItem(k, prev ? prev + '\n' + line : line);
+  };
+  try { write(); }
+  catch(e) { try { histPrune(7); write(); } catch(e2) {} }   // almacenamiento lleno: se libera lo más viejo y se reintenta
+}
+
+function histPrune(keepDays) {
+  const min = dayOf(minuteNow()) - (keepDays || HIST.KEEP_DAYS_WEB);
+  try {
+    const dead = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(HIST.KEY) && /^\d+$/.test(k.slice(HIST.KEY.length)) && +k.slice(HIST.KEY.length) < min) dead.push(k);
+    }
+    dead.forEach(k => localStorage.removeItem(k));
+  } catch(e) {}
+}
+
+function histRecord() {
+  if (histNative()) return;                      // en la app graba el servicio
+  const minute = minuteNow();
+  const cur = S.hist.cur;
+  if (cur && cur.minute !== minute) histAppend(cur.minute, cur.line);   // cambió el minuto: queda la última muestra del anterior
+  S.hist.cur = { minute, line: histLine(minute) };
+  if (dayOf(minute) !== S.hist.day) { S.hist.day = dayOf(minute); histPrune(); }
+}
+
+/* Firma de lo que cambia los valores grabados. El umbral de alerta no entra: no altera la serie. */
+function histSig(c) {
+  let h = 5381;
+  for (const ch of [...c.off].sort().join(',')) h = ((h << 5) + h + ch.charCodeAt(0)) & 0xffff;
+  return [c.capital, c.mode === 'both' ? 'b' : 't', c.p2p ? 1 : 0, c.cross ? 1 : 0, c.off.length, h.toString(16)].join(',');
+}
+
+function histNoteConfig(c) {
+  if (histNative()) return;
+  try {
+    const sig = histSig(c);
+    if (localStorage.getItem(HIST.SIG_KEY) === sig) return;
+    // Lo que estaba pendiente de un minuto anterior se midió con la configuración vieja: va antes de la marca
+    const cur = S.hist.cur, now = minuteNow();
+    if (cur && cur.minute < now) { histAppend(cur.minute, cur.line); S.hist.cur = null; }
+    histAppend(now, '#c,' + now + ',' + sig);
+    localStorage.setItem(HIST.SIG_KEY, sig);
+  } catch(e) {}
+}
+
+/* ── Lectura ── */
+function histText(fromMinute) {
+  const n = histNative();
+  if (n) { try { return String(n.getHistory(String(fromMinute)) || ''); } catch(e) { return ''; } }
+  const out = [];
+  try {
+    for (let d = dayOf(fromMinute), last = dayOf(minuteNow()); d <= last; d++) {
+      const s = localStorage.getItem(HIST.KEY + d);
+      if (s) out.push(s);
+    }
+  } catch(e) {}
+  if (S.hist.cur) out.push(S.hist.cur.line);     // el minuto en curso
+  return out.join('\n');
+}
+
+function histParse(text, fromMinute) {
+  const rows = new Map(), marks = [];
+  let lastSig = null;
+  for (const line of text.split('\n')) {
+    if (!line) continue;
+    if (line.charCodeAt(0) === 35) {             // '#': marca o encabezado
+      if (line.startsWith('#c,')) {
+        const p = line.split(','), m = +p[1], sig = p.slice(2).join(',');
+        if (lastSig !== null && sig !== lastSig && m >= fromMinute) marks.push(m);   // solo cuenta si la configuración cambió de verdad
+        lastSig = sig;
+      }
+      continue;
+    }
+    const p = line.split(','), m = +p[0];
+    if (!(m >= fromMinute)) continue;
+    const v = new Array(TABS.length);
+    for (let i = 0; i < TABS.length; i++) {
+      const s = p[i + 1];
+      const x = (s === undefined || s === '') ? null : +s / 100;
+      v[i] = (x === null || !isFinite(x)) ? null : x;
+    }
+    rows.set(m, { m, v, r: p[TABS.length + 1] || '' });   // una línea posterior del mismo minuto reemplaza a la anterior
+  }
+  return { list: [...rows.values()].sort((a, b) => a.m - b.m), marks };
+}
+
+/* Serie elegida: una moneda o, con "Todas", la mejor de cada minuto */
+function histSeries(list, sel) {
+  const pts = [];
+  for (const row of list) {
+    let v = null, ci = -1;
+    if (sel === 'all') {
+      for (let i = 0; i < row.v.length; i++) if (row.v[i] != null && (v == null || row.v[i] > v)) { v = row.v[i]; ci = i; }
+    } else { v = row.v[sel]; ci = sel; }
+    if (v != null) pts.push({ m: row.m, v, ci, r: row.r });
+  }
+  return pts;
+}
+
+function histStats(pts, thr) {
+  const st = { n: pts.length, above: 0, max: null, med: null, wins: [], hours: [] };
+  for (let h = 0; h < 24; h++) st.hours.push({ n: 0, above: 0 });
+  if (!pts.length) return st;
+  let w = null;
+  for (const p of pts) {
+    const hr = st.hours[new Date(p.m * 60000).getHours()];
+    hr.n++;
+    if (!st.max || p.v > st.max.v) st.max = p;
+    if (p.v >= thr) {
+      st.above++; hr.above++;
+      if (w && p.m - w.end <= HIST.GAP_MIN + 1) { w.end = p.m; if (p.v > w.peak.v) w.peak = p; }
+      else { if (w) st.wins.push(w); w = { start: p.m, end: p.m, peak: p }; }
+    } else if (w) { st.wins.push(w); w = null; }
+  }
+  if (w) st.wins.push(w);
+  for (const x of st.wins) x.dur = x.end - x.start + 1;
+  st.med = median(pts.map(p => p.v));
+  return st;
+}
+
+/* Tramos para dibujar: de cada uno, mediana, mínimo y máximo */
+function histBuckets(pts, from, to, maxB) {
+  const span = Math.max(1, to - from + 1);
+  const size = Math.max(1, Math.ceil(span / maxB));
+  const acc = new Array(Math.ceil(span / size)).fill(null);
+  for (const p of pts) {
+    const i = Math.floor((p.m - from) / size);
+    if (i >= 0 && i < acc.length) (acc[i] || (acc[i] = [])).push(p.v);
+  }
+  return {
+    size, from,
+    list: acc.map((a, i) => a ? { i, m0: from + i * size, n: a.length, med: median(a), min: Math.min(...a), max: Math.max(...a) } : null),
+  };
+}
+
+/* ── Formatos ── */
+const fmtDay = m => { const d = new Date(m * 60000); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1); };
+const fmtHM = m => { const d = new Date(m * 60000); return pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
+const fmtWhen = m => fmtDay(m) + ' ' + fmtHM(m);
+const pctTxt = (v, d = 2) => Math.abs(v) < 1e-9 ? '0%' : (v > 0 ? '+' : '−') + fmtN(Math.abs(v), d) + '%';
+const plural = (n, one, many) => fmtN(n, 0) + ' ' + (n === 1 ? one : many);
+
+function niceStep(raw) {
+  for (const s of [0.01, 0.02, 0.05, 0.1, 0.2, 0.25, 0.5, 1, 2, 2.5, 5, 10, 20, 25, 50, 100]) if (s >= raw) return s;
+  return 100;
+}
+const stepDec = s => s < 0.1 ? 2 : (s < 1 && Math.round(s * 100) % 10) ? 2 : s < 1 ? 1 : 0;
+const r6 = v => Math.round(v * 1e6) / 1e6;
+
+/* ── Gráficos (SVG propio) ── */
+const SVGNS = 'http://www.w3.org/2000/svg';
+function svgEl(tag, attrs, parent) {
+  const e = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function tipEl(host) {
+  let t = host.querySelector('.tip');
+  if (!t) { t = document.createElement('div'); t.className = 'tip'; host.appendChild(t); }
+  return t;
+}
+/* Tooltip: el valor manda, la etiqueta acompaña. Todo por textContent. */
+function tipFill(t, head, rows) {
+  t.textContent = '';
+  const h = document.createElement('div'); h.className = 'tiph'; h.textContent = head; t.appendChild(h);
+  for (const r of rows) {
+    const d = document.createElement('div'); d.className = 'tipr';
+    if (r.key) { const k = document.createElement('span'); k.className = 'tipk'; d.appendChild(k); }
+    const v = document.createElement('b'); v.textContent = r.v; d.appendChild(v);
+    const l = document.createElement('span'); l.textContent = ' ' + r.l; d.appendChild(l);
+    t.appendChild(d);
+  }
+}
+function tipPlace(t, host, x, W) {
+  t.style.display = 'block';
+  const w = t.offsetWidth;
+  t.style.left = Math.max(0, Math.min(W - w, x - w / 2)) + 'px';
+}
+
+/* Línea de la mejor ruta en el tiempo: mediana de cada tramo, con banda mínimo–máximo */
+function chartLine(host, bk, o) {
+  host.textContent = '';
+  const W = Math.max(260, host.clientWidth || 320), H = 196;
+  const m = { l: 42, r: 12, t: 16, b: 24 };
+  const pw = W - m.l - m.r, ph = H - m.t - m.b;
+  const L = bk.list, nb = L.length;
+
+  let lo = Math.min(0, o.thr), hi = Math.max(0, o.thr);
+  for (const b of L) if (b) { if (b.min < lo) lo = b.min; if (b.max > hi) hi = b.max; }
+  const step = niceStep((hi - lo) / 4 || 0.1);
+  lo = r6(Math.floor(r6(lo / step)) * step); hi = r6(Math.ceil(r6(hi / step)) * step);
+  if (hi <= lo) hi = r6(lo + step);
+  const x = i => m.l + (nb > 1 ? i / (nb - 1) : 0.5) * pw;
+  const y = v => m.t + (hi - v) / (hi - lo) * ph;
+  const dec = stepDec(step);
+
+  const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H, class: 'chart', tabindex: 0, role: 'img',
+    'aria-label': o.aria || 'Mejor ruta neta en el tiempo' }, host);
+
+  // Grilla: líneas finas y llenas; el cero un paso más visible
+  for (let v = lo; v <= hi + 1e-9; v = r6(v + step)) {
+    svgEl('line', { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), class: Math.abs(v) < 1e-9 ? 'gzero' : 'grid' }, svg);
+    svgEl('text', { x: m.l - 6, y: y(v) + 3.5, class: 'axl', 'text-anchor': 'end' }, svg).textContent = pctTxt(v, dec);
+  }
+  // Umbral: es un límite, por eso va punteado y con su nombre
+  if (Math.abs(o.thr) > 1e-9) {
+    svgEl('line', { x1: m.l, x2: W - m.r, y1: y(o.thr), y2: y(o.thr), class: 'thr' }, svg);
+    svgEl('text', { x: W - m.r, y: y(o.thr) - 4, class: 'axl', 'text-anchor': 'end' }, svg).textContent = 'umbral ' + pctTxt(o.thr);
+  }
+  // Eje del tiempo
+  const day = (o.to - o.from) > 36 * 60;
+  for (const [f, anchor] of [[0, 'start'], [1 / 3, 'middle'], [2 / 3, 'middle'], [1, 'end']]) {
+    const mm = Math.round(o.from + f * (o.to - o.from));
+    svgEl('text', { x: m.l + f * pw, y: H - 7, class: 'axl', 'text-anchor': anchor }, svg).textContent = day ? fmtDay(mm) : fmtHM(mm);
+  }
+
+  // Tramos con datos seguidos: banda y línea; sin datos no se une nada
+  const runs = [];
+  let run = null;
+  for (const b of L) {
+    if (b) { (run || (run = [], runs.push(run), run)).push(b); }
+    else run = null;
+  }
+  for (const r of runs) {
+    if (r.length > 1) {
+      if (r.some(b => b.max > b.min)) {
+        const up = r.map(b => `${x(b.i).toFixed(1)},${y(b.max).toFixed(1)}`);
+        const dn = r.slice().reverse().map(b => `${x(b.i).toFixed(1)},${y(b.min).toFixed(1)}`);
+        svgEl('polygon', { points: up.concat(dn).join(' '), class: 'band' }, svg);
+      }
+      svgEl('polyline', { points: r.map(b => `${x(b.i).toFixed(1)},${y(b.med).toFixed(1)}`).join(' '), class: 'serie' }, svg);
+    } else {
+      svgEl('circle', { cx: x(r[0].i), cy: y(r[0].med), r: 2.5, class: 'pt' }, svg);
+    }
+  }
+  // Último valor: punto con anillo y su número
+  const live = L.filter(Boolean);
+  const last = live[live.length - 1];
+  if (last) {
+    svgEl('circle', { cx: x(last.i), cy: y(last.med), r: 4, class: 'dot' }, svg);
+    const right = x(last.i) > W - m.r - 46;
+    // El número va por encima de lo dibujado en los últimos tramos, para no pisar la línea
+    const tail = live.slice(-10).map(b => y(b.max));
+    svgEl('text', { x: x(last.i) + (right ? -8 : 8), y: Math.max(m.t + 9, Math.min(...tail) - 7), class: 'dlab', 'text-anchor': right ? 'end' : 'start' }, svg)
+      .textContent = pctTxt(last.med);
+  }
+
+  // Capa de lectura: la línea vertical busca el tramo más cercano; no hay que acertarle a la línea
+  const cross = svgEl('line', { y1: m.t, y2: m.t + ph, class: 'cross', visibility: 'hidden' }, svg);
+  const mark = svgEl('circle', { r: 4, class: 'dot', visibility: 'hidden' }, svg);
+  const hit = svgEl('rect', { x: m.l, y: m.t, width: pw, height: ph, class: 'hit' }, svg);
+  const tip = tipEl(host);
+  let cur = -1;
+  const show = k => {
+    const b = live[k];
+    if (!b) return;
+    cur = k;
+    cross.setAttribute('x1', x(b.i)); cross.setAttribute('x2', x(b.i)); cross.setAttribute('visibility', 'visible');
+    mark.setAttribute('cx', x(b.i)); mark.setAttribute('cy', y(b.med)); mark.setAttribute('visibility', 'visible');
+    const head = bk.size > 1 ? `${fmtWhen(b.m0)} a ${fmtHM(b.m0 + bk.size - 1)}` : fmtWhen(b.m0);
+    const rows = [{ key: true, v: pctTxt(b.med), l: bk.size > 1 ? 'mediana' : 'mejor ruta' }];
+    if (b.max > b.min) rows.push({ v: pctTxt(b.max), l: 'máximo' }, { v: pctTxt(b.min), l: 'mínimo' });
+    tipFill(tip, head, rows);
+    tipPlace(tip, host, x(b.i), W);
+  };
+  const hide = () => { cur = -1; cross.setAttribute('visibility', 'hidden'); mark.setAttribute('visibility', 'hidden'); tip.style.display = 'none'; };
+  const near = ev => {
+    if (!live.length) return;
+    const px = (ev.clientX - svg.getBoundingClientRect().left) * (W / svg.getBoundingClientRect().width);
+    let best = 0, bd = Infinity;
+    for (let k = 0; k < live.length; k++) { const d = Math.abs(x(live[k].i) - px); if (d < bd) { bd = d; best = k; } }
+    show(best);
+  };
+  hit.addEventListener('pointermove', near);
+  hit.addEventListener('pointerdown', near);
+  hit.addEventListener('pointerleave', hide);
+  svg.addEventListener('focus', () => { if (live.length) show(live.length - 1); });
+  svg.addEventListener('blur', hide);
+  svg.addEventListener('keydown', ev => {
+    if (ev.key !== 'ArrowLeft' && ev.key !== 'ArrowRight') return;
+    ev.preventDefault();
+    show(Math.max(0, Math.min(live.length - 1, (cur < 0 ? live.length - 1 : cur) + (ev.key === 'ArrowLeft' ? -1 : 1))));
+  });
+}
+
+/* Barras por hora del día: qué parte del tiempo la mejor ruta estuvo sobre el umbral */
+function chartHours(host, hours, o) {
+  host.textContent = '';
+  const W = Math.max(260, host.clientWidth || 320), H = 158;
+  const m = { l: 36, r: 8, t: 18, b: 22 };
+  const pw = W - m.l - m.r, ph = H - m.t - m.b;
+  const val = h => hours[h].n ? hours[h].above / hours[h].n * 100 : null;
+  let top = 0;
+  for (let h = 0; h < 24; h++) top = Math.max(top, val(h) || 0);
+  const step = niceStep((top || 1) / 4);
+  const hi = r6(Math.max(step, Math.ceil(r6(top / step)) * step));
+  const band = pw / 24, bw = Math.min(24, Math.max(4, band - 3));
+  const base = m.t + ph;
+  const y = v => m.t + (hi - v) / hi * ph;
+  const x0 = h => m.l + h * band + (band - bw) / 2;
+  const dec = stepDec(step);
+
+  const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H, class: 'chart', tabindex: 0, role: 'img',
+    'aria-label': 'Tiempo sobre el umbral por hora del día' }, host);
+  for (let v = 0; v <= hi + 1e-9; v = r6(v + step)) {
+    svgEl('line', { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), class: v === 0 ? 'gzero' : 'grid' }, svg);
+    svgEl('text', { x: m.l - 6, y: y(v) + 3.5, class: 'axl', 'text-anchor': 'end' }, svg).textContent = fmtN(v, dec) + '%';
+  }
+  for (let h = 0; h < 24; h += 3)
+    svgEl('text', { x: m.l + h * band + band / 2, y: H - 7, class: 'axl', 'text-anchor': 'middle' }, svg).textContent = h + ' h';
+
+  const bars = [];
+  let maxH = -1;
+  for (let h = 0; h < 24; h++) {
+    const v = val(h);
+    if (v != null && v > 0 && (maxH < 0 || v > val(maxH))) maxH = h;
+    if (!(v > 0)) { bars.push(null); continue; }
+    const yt = y(v), r = Math.min(4, bw / 2, base - yt), a = x0(h), b = a + bw;
+    // Extremo redondeado arriba, recto en la base
+    bars.push(svgEl('path', { d: `M${a},${base}V${yt + r}Q${a},${yt} ${a + r},${yt}H${b - r}Q${b},${yt} ${b},${yt + r}V${base}Z`, class: 'bar' }, svg));
+  }
+  if (maxH >= 0) {
+    const cx = x0(maxH) + bw / 2;
+    svgEl('text', { x: Math.max(m.l + 14, Math.min(W - m.r - 14, cx)), y: y(val(maxH)) - 5, class: 'dlab', 'text-anchor': 'middle' }, svg)
+      .textContent = fmtN(val(maxH), 1) + '%';
+  }
+
+  const hit = svgEl('rect', { x: m.l, y: m.t, width: pw, height: ph, class: 'hit' }, svg);
+  const tip = tipEl(host);
+  let cur = -1;
+  const show = h => {
+    if (cur >= 0 && bars[cur]) bars[cur].setAttribute('class', 'bar');
+    cur = h;
+    if (bars[h]) bars[h].setAttribute('class', 'bar on');
+    const v = val(h);
+    tipFill(tip, `${h} a ${(h + 1) % 24} h`, v == null ? [{ v: 'sin datos', l: '' }]
+      : [{ key: true, v: fmtN(v, 1) + '%', l: 'del tiempo' }, { v: fmtN(hours[h].above, 0), l: `de ${fmtN(hours[h].n, 0)} min` }]);
+    tipPlace(tip, host, x0(h) + bw / 2, W);
+  };
+  const hide = () => { if (cur >= 0 && bars[cur]) bars[cur].setAttribute('class', 'bar'); cur = -1; tip.style.display = 'none'; };
+  const near = ev => {
+    const bx = svg.getBoundingClientRect();
+    const px = (ev.clientX - bx.left) * (W / bx.width);
+    show(Math.max(0, Math.min(23, Math.floor((px - m.l) / band))));
+  };
+  hit.addEventListener('pointermove', near);
+  hit.addEventListener('pointerdown', near);
+  hit.addEventListener('pointerleave', hide);
+  svg.addEventListener('focus', () => show(maxH >= 0 ? maxH : new Date().getHours()));
+  svg.addEventListener('blur', hide);
+  svg.addEventListener('keydown', ev => {
+    if (ev.key !== 'ArrowLeft' && ev.key !== 'ArrowRight') return;
+    ev.preventDefault();
+    show(((cur < 0 ? 0 : cur) + (ev.key === 'ArrowLeft' ? 23 : 1)) % 24);
+  });
+}
+
+/* ── Pestaña ── */
+const histThr = () => S.hist.thr == null ? thrPct() : S.hist.thr;
+const histSel = () => S.hist.coin === 'all' ? 'all' : TABS.indexOf(S.hist.coin);
+const histSelLabel = () => S.hist.coin === 'all' ? 'todas las monedas' : tabLabel(S.hist.coin);
+
+function histFilter() {
+  S.hist.coin = $('h-coin').value;
+  S.hist.period = +$('h-period').value;
+  const t = parseFloat($('h-thr').value);
+  S.hist.thr = isFinite(t) ? Math.max(-5, Math.min(20, t)) : null;
+  histOpen(true);
+}
+
+/* Desde el ciclo: recarga y redibuja solo cuando ya hay un minuto nuevo para mostrar */
+function histTick() {
+  if (S.activeTab === 'hist' && Date.now() - S.hist.loadedAt > 55000) histOpen(true);
+}
+
+function histOpen(force) {
+  if (S.activeTab !== 'hist') return;
+  const now = minuteNow();
+  const keep = (histNative() ? HIST.KEEP_DAYS_APP : HIST.KEEP_DAYS_WEB) * 1440;
+  const span = S.hist.period > 0 ? Math.min(S.hist.period, keep) : keep;
+  const from = now - span + 1;
+  if (force || !S.hist.data || S.hist.data.from !== from || Date.now() - S.hist.loadedAt > 55000) {
+    const el = $('tp-hist');
+    el.classList.add('busy');            // se conserva el dibujo anterior, atenuado, mientras carga
+    const parsed = histParse(histText(from), from);
+    S.hist.data = { from, to: now, list: parsed.list, marks: parsed.marks };
+    S.hist.loadedAt = Date.now();
+    el.classList.remove('busy');
+  }
+  histRender();
+}
+
+function tview(id, head, rows) {
+  const open = S.hist.open[id] ? ' open' : '';
+  return `<details class="tview"${open} ontoggle="S.hist.open['${id}']=this.open"><summary>Ver como tabla</summary>
+    <div class="tscroll"><table class="dtbl"><thead><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+    <tbody>${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div></details>`;
+}
+
+function histRender() {
+  const D = S.hist.data;
+  if (!D) return;
+  const thr = histThr(), sel = histSel();
+  if (document.activeElement !== $('h-thr')) $('h-thr').value = thr;
+  const app = !!histNative();
+  const pts = histSeries(D.list, sel);
+  const st = histStats(pts, thr);
+  const first = D.list.length ? D.list[0].m : null;
+  const from = first != null ? Math.max(D.from, first) : D.from;     // el gráfico usa su ancho para lo que hay
+  const span = D.to - D.from + 1;
+
+  // De dónde salen los datos y cuánto cubren
+  const src = app
+    ? 'Lo graba el monitor en segundo plano, una muestra por minuto, también con la app cerrada.'
+    : (window.ArbitrARNative
+        ? 'Esta versión de la app todavía no le pide el historial al monitor (falta la interfaz 5.4): por ahora se graba solo con la app abierta.'
+        : 'En el navegador se graba una muestra por minuto mientras esta página esté abierta.');
+  let cover = '';
+  if (first != null) {
+    cover = ` Hay datos desde el ${fmtWhen(first)}: ${plural(D.list.length, 'minuto', 'minutos')}, ${fmtN(Math.min(100, D.list.length / span * 100), 0)}% del período elegido.`;
+    if (D.marks.length) cover += ` ⚠ En el período cambió la configuración ${D.marks.length === 1 ? 'una vez' : D.marks.length + ' veces'} (última: ${fmtWhen(D.marks[D.marks.length - 1])}): las cifras mezclan configuraciones.`;
+  }
+  txt('h-src', src + cover);
+
+  const body = $('h-body');
+  if (!pts.length) {
+    body.innerHTML = `<div class="em">${first == null ? 'Todavía no hay historial en este período.' : 'No hay muestras de ' + esc(histSelLabel()) + ' en este período.'} Volvé en unos minutos.</div>`;
+    return;
+  }
+
+  // Cifras
+  const pctAbove = st.above / st.n * 100;
+  const durs = st.wins.map(w => w.dur);
+  const longest = durs.length ? Math.max(...durs) : 0;
+  const tile = (l, v, s) => `<div class="tile"><div class="tl">${l}</div><div class="tv">${v}</div><div class="ts">${s}</div></div>`;
+  const tiles = tile('Tiempo sobre el umbral', fmtN(pctAbove, pctAbove > 0 && pctAbove < 10 ? 1 : 0) + '%', `${fmtN(st.above, 0)} de ${fmtN(st.n, 0)} min`)
+    + tile('Ventanas', fmtN(st.wins.length, 0), st.wins.length ? `mediana ${fmtDur(median(durs))} · la más larga ${fmtDur(longest)}` : `ninguna llegó a ${pctTxt(thr)}`)
+    + tile('Máximo', pctTxt(st.max.v), fmtWhen(st.max.m) + (sel === 'all' ? ' · ' + tabLabel(TABS[st.max.ci]) : ''))
+    + tile('Mediana', pctTxt(st.med), 'la mitad del tiempo estuvo por debajo');
+
+  // Tabla por moneda
+  const per = TABS.map((tab, i) => {
+    const s = histStats(histSeries(D.list, i), thr);
+    return s.n ? [tabLabel(tab), fmtN(s.above / s.n * 100, 1) + '%', fmtN(s.wins.length, 0), pctTxt(s.max.v), pctTxt(s.med)]
+               : [tabLabel(tab), '—', '—', '—', '—'];
+  });
+
+  // Últimas ventanas
+  const wins = st.wins.slice(-6).reverse().map(w => {
+    const r = (w.peak.r || '').split('|').find(s => s.startsWith(TABS[w.peak.ci] + ':'));
+    return `<div class="win"><div class="winh"><b>${fmtWhen(w.start)}</b><span>${fmtDur(w.dur)} · pico ${pctTxt(w.peak.v)}</span></div>
+      <div class="wins">${tabLabel(TABS[w.peak.ci])}${r ? ' · ' + esc(histRouteName(r)) : ''}</div></div>`;
+  }).join('');
+
+  body.innerHTML = `
+    <div class="tiles">${tiles}</div>
+    <div class="ccard">
+      <div class="ct">Mejor ruta neta en el tiempo</div>
+      <div class="cs" id="h-line-sub"></div>
+      <div class="chost" id="h-line"></div>
+      <div id="h-line-tbl"></div>
+    </div>
+    <div class="ccard">
+      <div class="ct">A qué hora aparece</div>
+      <div class="cs">Parte de cada hora del día en que la mejor ruta de ${esc(histSelLabel())} estuvo en ${pctTxt(thr)} o más.</div>
+      <div class="chost" id="h-hours"></div>
+      ${tview('hours', ['Hora', 'Sobre el umbral', 'Minutos'], st.hours.map((h, i) => [`${i} a ${(i + 1) % 24} h`, h.n ? fmtN(h.above / h.n * 100, 1) + '%' : 'sin datos', fmtN(h.n, 0)]))}
+    </div>
+    <div class="sh">Últimas ventanas</div>
+    <div class="winl">${wins || `<div class="em">En este período la mejor ruta de ${esc(histSelLabel())} nunca llegó a ${pctTxt(thr)}.</div>`}</div>
+    <div class="sh">Por moneda</div>
+    <div class="ccard">${`<div class="tscroll"><table class="dtbl"><thead><tr><th>Moneda</th><th>Sobre el umbral</th><th>Ventanas</th><th>Máximo</th><th>Mediana</th></tr></thead>
+      <tbody>${per.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`}</div>`;
+
+  // Gráficos: se dibujan con el ancho real de la tarjeta
+  const host = $('h-line');
+  const bk = histBuckets(pts, from, D.to, Math.max(40, Math.floor(((host.clientWidth || 320) - 54) / 2)));
+  txt('h-line-sub', bk.size > 1
+    ? `Línea: mediana de cada tramo de ${fmtDur(bk.size)}. Banda: mínimo y máximo del tramo.`
+    : 'Una muestra por minuto.');
+  chartLine(host, bk, { thr, from, to: D.to, aria: 'Mejor ruta neta de ' + histSelLabel() + ' en el tiempo' });
+  $('h-line-tbl').innerHTML = tview('line', ['Tramo', 'Mediana', 'Mínimo', 'Máximo'],
+    bk.list.filter(Boolean).map(b => [fmtWhen(b.m0), pctTxt(b.med), pctTxt(b.min), pctTxt(b.max)]));
+  if (st.above > 0) chartHours($('h-hours'), st.hours, {});
+  else $('h-hours').innerHTML = `<div class="em">Ninguna hora llegó al umbral en este período. Bajá el umbral para ver a qué hora se acerca más.</div>`;
+}
+
+/* "usdt:binance>belo" o "x:usdc@fiwind>usdt@belo" → nombre legible */
+function histRouteName(r) {
+  const body = r.slice(r.indexOf(':') + 1);
+  const leg = s => {
+    const [a, b] = s.includes('@') ? s.split('@') : [null, s];
+    return (EX[b] ? exShort(b) : b) + (a && COINS[a] ? ' ' + COINS[a].label : '');
+  };
+  const [a, b] = body.split('>');
+  return b ? leg(a) + ' → ' + leg(b) : body;
+}
+
+let histResizeT = 0;
+window.addEventListener('resize', () => {
+  clearTimeout(histResizeT);
+  histResizeT = setTimeout(() => { if (S.activeTab === 'hist') histRender(); }, 200);
+});
+window.addEventListener('pagehide', () => {
+  const cur = S.hist.cur;
+  if (cur && !histNative()) { histAppend(cur.minute, cur.line); S.hist.cur = null; }
+});
+
+/* ══════════════════════════════════════════════════════════════
+   OTROS ARBITRAJES (pestaña Otros)
+   Tres monitores que trabajan con la app abierta:
+   - Brecha entre dólares: cuánto cuesta comprar y cuánto rinde vender un dólar por cada camino.
+   - Triangular en Binance: pesos → moneda → otra moneda → pesos, con el libro de órdenes real.
+   - Tasas en cripto: financiamiento de los futuros perpetuos por exchange.
+══════════════════════════════════════════════════════════════ */
+const MON = {
+  BRECHA_MS: 60000, TRI_MS: 30000, TRI_SYMS_MS: 3600000, TRI_DEPTH_N: 3, TRI_SHOW: 8,
+  FUND_MS: 300000, FUND_HIST_MS: 3600000,
+  MEP_LIVE_SEC: 1200,       // un precio de bolsa más viejo que esto es el último del mercado, no uno vivo
+};
+S.mon = {
+  sub: 'brecha',
+  br:   { dolar:null, uu:null, uuAt:0, tried:0, busy:false, err:null },
+  tri:  { tris:null, need:[], symsAt:0, res:[], at:0, tried:0, busy:false, err:null, state:new Map() },
+  fund: { cur:{}, hist:{}, histAt:0, at:0, tried:0, busy:false },
+};
+
+function monSub(id, el) {
+  S.mon.sub = id;
+  document.querySelectorAll('.segb').forEach(b => b.classList.toggle('act', b === el));
+  monRender();
+}
+
+/* Al final de cada ciclo: cada monitor decide si le toca consultar */
+function monTick() {
+  const now = Date.now(), m = S.mon;
+  if (now - m.br.tried >= MON.BRECHA_MS) monBrecha();
+  if (now - m.tri.tried >= MON.TRI_MS) monTri();
+  if (now - m.fund.tried >= MON.FUND_MS) monFund();
+}
+
+function monRender() {
+  if (S.activeTab !== 'otros') return;
+  const el = $('mon-body');
+  if (!el) return;
+  const keep = document.activeElement && el.contains(document.activeElement) && document.activeElement.tagName === 'INPUT';
+  if (keep) return;                       // no se redibuja mientras se está escribiendo un valor
+  el.innerHTML = S.mon.sub === 'tri' ? triHtml() : S.mon.sub === 'fund' ? fundHtml() : brechaHtml();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BRECHA ENTRE DÓLARES
+══════════════════════════════════════════════════════════════ */
+async function monBrecha() {
+  const b = S.mon.br;
+  if (b.busy) return;
+  b.busy = true; b.tried = Date.now();
+  try {
+    const isObj = x => !!x && typeof x === 'object' && !Array.isArray(x);
+    const [dol, uu] = await Promise.all([
+      getJson('https://criptoya.com/api/dolar').catch(() => null),
+      getJson('https://criptoya.com/api/usdt/usd/' + fmtVol(capUSD())).catch(() => null),
+    ]);
+    if (isObj(dol)) b.dolar = dol;
+    if (isObj(uu)) { b.uu = uu; b.uuAt = Date.now(); }
+    b.err = (!isObj(dol) && !isObj(uu)) ? 'CriptoYa no respondió' : null;
+  } catch(e) { b.err = 'sin respuesta'; }
+  finally { b.busy = false; }
+  monRender();
+}
+
+function onMepCost(el) {
+  S.cfg.mepCost = clampCfg(el.value, USER_CFG.mepCost);
+  el.value = S.cfg.mepCost;
+  syncUserConfig();
+  el.blur();
+  monRender();
+}
+
+/* Caminos para comprar y vender un dólar, con los precios de este momento */
+function brechaCalc() {
+  const b = S.mon.br, d = b.dolar || {}, now = nowSec();
+  const pos = v => (typeof v === 'number' && v > 0) ? v : null;
+  const out = { oficial:null, mep:null, blue:null, cripto:{ rows:[], sell:null, buy:null }, circuits:[] };
+
+  if (d.oficial) out.oficial = { buy: pos(d.oficial.ask), sell: pos(d.oficial.bid), t: d.oficial.timestamp };
+  if (d.blue)    out.blue    = { buy: pos(d.blue.ask),    sell: pos(d.blue.bid),    t: d.blue.timestamp };
+  const al = d.mep && d.mep.al30;
+  const q = al && ((al['24hs'] && pos(al['24hs'].price)) ? al['24hs'] : al.ci);
+  if (q && pos(q.price)) {
+    const c = S.cfg.mepCost / 100;
+    out.mep = { price: q.price, buy: q.price * (1 + c), sell: q.price * (1 - c), t: q.timestamp, live: now - q.timestamp <= MON.MEP_LIVE_SEC };
+  }
+
+  // Cripto: dólares ↔ USDT en cada exchange, y USDT ↔ pesos en el mejor de los míos
+  const P = S.prices.usdt || {};
+  const arsOk = !!S.feed.usdt && !feedDown('usdt');
+  const mine = arsOk ? liveVenues('usdt').filter(id => isActive(id) && !EX[id].p2p) : [];
+  const okBuy = id => P[id].askARS && !quoteSuspect('usdt', id, 'buy'), okSell = id => P[id].bidARS && !quoteSuspect('usdt', id, 'sell');
+  const usdArs = S.fx.usdArs || 1550, cap = capUSD(), capARS = cap * usdArs;
+  const uu = b.uu || {};
+  let refT = 0;
+  for (const e of Object.values(uu)) { const t = e && typeof e === 'object' ? num(e.time) : 0; if (t > refT) refT = t; }
+  const fresh = refT > 0 && Date.now() - b.uuAt <= 180000;
+  for (const id of EX_IDS) {
+    const ex = EX[id];
+    if (!ex.usd || !isActive(id)) continue;     // solo los que mueven dólares bancarios: otros precios en dólares no son comparables
+    const key = ex.keys.find(k => uu[k] && typeof uu[k] === 'object');
+    if (!key || !fresh) continue;
+    const e = uu[key], a = num(e.totalAsk) || num(e.ask), bq = num(e.totalBid) || num(e.bid), t = num(e.time);
+    if (!(a > 0) || !(bq > 0) || bq > a || refT - t > CFG.STALE_SEC) continue;
+    const row = { id, a, b: bq, sell:null, buy:null };
+    // Vender dólares: comprar USDT con ellos acá y venderlos por pesos donde más paguen
+    for (const s of mine) {
+      if (!okSell(s)) continue;
+      const h = s === id ? { fee:0, internal:true, name:'INTERNAL' } : hop('usdt', id, s);
+      if (!h || h.nofee) continue;
+      const ars = (cap / a - h.fee) * P[s].bidARS;
+      if (ars > 0 && (!row.sell || ars / cap > row.sell.v)) row.sell = { v: ars / cap, via: s, net: h };
+    }
+    // Comprar dólares: comprar USDT con pesos donde menos cuesten y venderlos por dólares acá
+    for (const s of mine) {
+      if (!okBuy(s)) continue;
+      const h = s === id ? { fee:0, internal:true, name:'INTERNAL' } : hop('usdt', s, id);
+      if (!h || h.nofee) continue;
+      const usd = (capARS / P[s].askARS - h.fee) * bq;
+      if (usd > 0 && (!row.buy || capARS / usd < row.buy.v)) row.buy = { v: capARS / usd, via: s, net: h };
+    }
+    out.cripto.rows.push(row);
+    if (row.sell && (!out.cripto.sell || row.sell.v > out.cripto.sell.v)) out.cripto.sell = Object.assign({ ex: id }, row.sell);
+    if (row.buy && (!out.cripto.buy || row.buy.v < out.cripto.buy.v)) out.cripto.buy = Object.assign({ ex: id }, row.buy);
+  }
+
+  // Circuitos: comprar el dólar por un camino y venderlo por otro
+  const cs = out.cripto.sell, cb = out.cripto.buy, mep = out.mep, of = out.oficial;
+  const add = (name, buy, sell, steps, note, warn) => {
+    if (buy > 0 && sell > 0) out.circuits.push({ name, buy, sell, pct: (sell / buy - 1) * 100, steps, note, warn });
+  };
+  const viaTxt = (x, toArs) => {
+    const e = EX[x.ex].name, v = EX[x.via].name;
+    if (toArs) return x.via === x.ex ? `comprar USDT con los dólares en ${e} y venderlos ahí mismo por pesos`
+      : `comprar USDT con los dólares en ${e}, pasarlos a ${v} y venderlos por pesos`;
+    return x.via === x.ex ? `comprar USDT con pesos en ${e} y venderlos ahí mismo por dólares`
+      : `comprar USDT con pesos en ${v}, pasarlos a ${e} y venderlos por dólares`;
+  };
+  const stale = mep && !mep.live ? `El precio del MEP es el último del mercado (${fmtWhen(Math.floor(mep.t / 60))}): no es un precio vivo.` : null;
+  if (mep && cs) add('MEP → cripto → pesos', mep.buy, cs.v,
+    `Comprar dólar MEP, transferirlo al exchange, ${viaTxt(cs, true)}.`, stale, false);
+  if (mep && cb) add('Pesos → cripto → dólar → MEP', cb.v, mep.sell,
+    `${viaTxt(cb, false).replace(/^c/, 'C')}, retirarlos al banco y venderlos por MEP.`, stale, false);
+  if (of && of.buy && cs) add('Oficial → cripto → pesos', of.buy, cs.v,
+    `Comprar dólar oficial en el banco, transferirlo al exchange, ${viaTxt(cs, true)}.`,
+    'Al comprar dólar oficial se firma una declaración jurada (Com. A 8336 del BCRA) que impide por 90 días comprar títulos con liquidación en dólares. Habla de títulos y no menciona cripto: confirmá con tu banco qué firmás antes de hacerlo.', true);
+  if (of && of.buy && mep) add('Oficial → MEP', of.buy, mep.sell,
+    'Comprar dólar oficial en el banco y venderlo en la bolsa.',
+    'Quien compra dólar oficial se compromete por declaración jurada a no comprar títulos con liquidación en dólares durante 90 días (Com. A 8336 del BCRA): es justo este paso.' + (stale ? ' ' + stale : ''), true);
+  out.circuits.sort((x, y) => y.pct - x.pct);
+  return out;
+}
+
+function brechaHtml() {
+  const b = S.mon.br;
+  if (!b.dolar && !b.uu) {
+    return b.err ? `<div class="em">No se pudieron leer los datos del dólar (${esc(b.err)}). Se reintenta en un minuto.</div>`
+                 : '<div class="ld"><div class="spin"></div></div>';
+  }
+  const r = brechaCalc();
+  const p = v => v ? '$' + fmtN(v, 2) : '—';
+  const rowsCh = [];
+  const ch = (name, sub, o) => rowsCh.push(`<tr><td><div class="exnm">${name}</div><div class="exsub">${sub}</div></td><td class="num">${p(o && o.buy)}</td><td class="num">${p(o && o.sell)}</td></tr>`);
+  ch('Oficial', 'banco', r.oficial);
+  ch('MEP', r.mep ? `AL30 a ${p(r.mep.price)} ${r.mep.live ? '· en vivo' : '· último precio'}` : 'sin dato', r.mep);
+  ch('Cripto', (r.cripto.buy || r.cripto.sell)
+    ? `comprar por ${r.cripto.buy ? EX[r.cripto.buy.ex].short : '—'} · vender por ${r.cripto.sell ? EX[r.cripto.sell.ex].short : '—'}` : 'sin exchange con dólares entre los tuyos',
+    { buy: r.cripto.buy && r.cripto.buy.v, sell: r.cripto.sell && r.cripto.sell.v });
+  ch('Blue', 'informal · solo referencia', r.blue);
+
+  const circ = r.circuits.map(c => `<div class="oppc ${c.pct > 0 && !c.warn ? 'near' : ''}">
+      <div class="oppt"><div class="oppr"><span class="cname">${c.name}</span>${c.warn ? '<span class="oppflag">CON RESTRICCIÓN</span>' : ''}</div>
+        <span class="opppnl ${c.pct > 0 ? (c.warn ? 'near' : 'pos') : 'neg'}">${fmtP(c.pct)}</span></div>
+      <div class="oppnet">Comprás el dólar a <b>${p(c.buy)}</b> y lo vendés a <b>${p(c.sell)}</b>. ${esc(c.steps)}</div>
+      ${c.note ? `<div class="cnote">${esc(c.note)}</div>` : ''}
+    </div>`).join('');
+
+  const rowsEx = r.cripto.rows.slice().sort((x, y) => (y.sell ? y.sell.v : 0) - (x.sell ? x.sell.v : 0)).map(x =>
+    `<tr><td><div class="exnm">${EX[x.id].short}</div><div class="exsub">USDT a ${fmtN(x.a, 4)} · ${fmtN(x.b, 4)} USD</div></td><td class="num">${p(x.buy && x.buy.v)}</td><td class="num">${p(x.sell && x.sell.v)}</td></tr>`).join('');
+
+  return `
+    <div class="icard">Cuánto cuesta <strong>comprar</strong> un dólar y cuánto rinde <strong>venderlo</strong> por cada camino, ahora y para U$D ${fmtN(capUSD(), 0)}. Hay circuito cuando vender por un camino rinde más que comprar por otro.</div>
+    <div class="ccard"><div class="tscroll"><table class="dtbl">
+      <thead><tr><th>Camino</th><th>Comprar USD</th><th>Vender USD</th></tr></thead><tbody>${rowsCh.join('')}</tbody></table></div>
+      <div class="inrow"><label for="mepc">Comisión de tu bróker por operación MEP</label>
+        <span><input type="number" id="mepc" value="${S.cfg.mepCost}" min="0" max="5" step="0.05" onchange="onMepCost(this)"> %</span></div>
+    </div>
+    <div class="sh">Circuitos</div>
+    <div class="oppl">${circ || '<div class="em">Faltan datos para armar los circuitos.</div>'}</div>
+    <div class="sh">El dólar pasando por cripto, por exchange</div>
+    <div class="ccard"><div class="tscroll"><table class="dtbl">
+      <thead><tr><th>Exchange</th><th>Comprar USD</th><th>Vender USD</th></tr></thead>
+      <tbody>${rowsEx || '<tr><td colspan="3" class="mut">Ninguno de tus exchanges publica USDT contra dólares en este momento.</td></tr>'}</tbody></table></div>
+      <div class="cfoot">Pesos por dólar pasando por USDT, con la punta en pesos en el mejor de tus exchanges. Debajo de cada nombre, cuántos dólares cobra por un USDT y cuántos paga. Entran solo los que mueven dólares por transferencia bancaria en Argentina: ${EX_IDS.filter(id => EX[id].usd).map(id => EX[id].name).join(', ')}. Este monitor informa: no dispara alarmas.</div>
+    </div>`;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TRIANGULAR EN BINANCE
+   Pesos → X → Y → pesos dentro del mismo exchange: sin retiros ni esperas.
+══════════════════════════════════════════════════════════════ */
+async function triDiscover() {
+  const t = S.mon.tri;
+  const all = await binanceGet('/api/v3/ticker/bookTicker', x => Array.isArray(x) && x.length > 10);
+  const live = new Set();
+  for (const x of all) if (x && num(x.bidPrice) > 0 && num(x.askPrice) > 0) live.add(String(x.symbol));
+  const assets = [...live].filter(s => s.length > 3 && s.endsWith('ARS')).map(s => s.slice(0, -3));
+  const tris = [], need = new Set();
+  for (const X of assets) for (const Y of assets) {
+    if (X === Y) continue;
+    let mkt = null;
+    if (live.has(X + Y)) mkt = { sym: X + Y, sell: true };          // el par cotiza X en Y: se vende X
+    else if (live.has(Y + X)) mkt = { sym: Y + X, sell: false };    // el par cotiza Y en X: se compra Y
+    if (!mkt) continue;
+    const tr = { X, Y, s1: X + 'ARS', mkt, s3: Y + 'ARS' };
+    tr.syms = [tr.s1, mkt.sym, tr.s3];
+    tris.push(tr);
+    tr.syms.forEach(s => need.add(s));
+  }
+  t.tris = tris; t.need = [...need]; t.symsAt = Date.now();
+}
+
+/* Gasta `quote` contra las ventas del libro: devuelve cuánto se compra */
+function walkSpend(asks, quote) {
+  let left = quote, got = 0;
+  for (const [p, q] of asks) {
+    const cost = p * q;
+    if (cost >= left) { got += left / p; left = 0; break; }
+    got += q; left -= cost;
+  }
+  return { out: got, full: left <= quote * 1e-9 };
+}
+/* Vende `base` contra las compras del libro: devuelve cuánto se cobra */
+function walkSell(bids, base) {
+  let left = base, got = 0;
+  for (const [p, q] of bids) {
+    if (q >= left) { got += left * p; left = 0; break; }
+    got += q * p; left -= q;
+  }
+  return { out: got, full: left <= base * 1e-9 };
+}
+
+/* Resultado con la mejor punta de cada libro, por peso invertido */
+function triTop(tr, book, f) {
+  const a = book[tr.s1], m = book[tr.mkt.sym], c = book[tr.s3];
+  if (!a || !m || !c || !(a.ask > 0) || !(c.bid > 0) || !(tr.mkt.sell ? m.bid > 0 : m.ask > 0)) return null;
+  const k = 1 - f;
+  const x = (1 / a.ask) * k;
+  const y = (tr.mkt.sell ? x * m.bid : x / m.ask) * k;
+  return { tr, pct: (y * c.bid * k - 1) * 100, deep: null };
+}
+
+/* Resultado recorriendo el libro con el capital real. Si el libro no alcanza, se informa el mayor
+   monto que sí entra completo en las tres operaciones y lo que rinde ese monto. */
+function triDeep(tr, depth, capARS, f) {
+  const a = depth[tr.s1], m = depth[tr.mkt.sym], c = depth[tr.s3];
+  if (!a || !m || !c) return null;
+  const k = 1 - f;
+  const run = cap => {
+    const l1 = walkSpend(a.asks, cap);
+    const l2 = tr.mkt.sell ? walkSell(m.bids, l1.out * k) : walkSpend(m.asks, l1.out * k);
+    const l3 = walkSell(c.bids, l2.out * k);
+    return { ars: l3.out * k, full: l1.full && l2.full && l3.full };
+  };
+  const r = run(capARS);
+  if (r.full) return { pct: (r.ars / capARS - 1) * 100, full: true, ars: r.ars, cap: capARS };
+  let lo = 0, hi = capARS;
+  for (let i = 0; i < 30; i++) { const mid = (lo + hi) / 2; if (run(mid).full) lo = mid; else hi = mid; }
+  if (!(lo > 0)) return { pct: null, full: false, ars: 0, cap: 0 };
+  return { pct: (run(lo).ars / lo - 1) * 100, full: false, ars: 0, cap: lo };
+}
+
+async function monTri() {
+  const t = S.mon.tri;
+  if (t.busy) return;
+  t.busy = true; t.tried = Date.now();
+  try {
+    if (!t.tris || Date.now() - t.symsAt > MON.TRI_SYMS_MS) await triDiscover();
+    if (!t.tris.length) { t.res = []; t.err = 'Binance no informa triángulos contra pesos en este momento'; return; }
+    const d = await binanceGet('/api/v3/ticker/bookTicker?symbols=' + encodeURIComponent(JSON.stringify(t.need)), Array.isArray);
+    const book = {};
+    for (const x of d) if (x) book[x.symbol] = { bid: num(x.bidPrice), ask: num(x.askPrice) };
+    const f = S.cfg.triFee / 100, capARS = capUSD() * (S.fx.usdArs || 1550);
+    const res = t.tris.map(tr => triTop(tr, book, f)).filter(Boolean).sort((a, b) => b.pct - a.pct);
+
+    // Libro de órdenes real para los mejores: el resultado es para el capital configurado
+    const top = res.slice(0, MON.TRI_DEPTH_N);
+    const depth = {};
+    await Promise.all([...new Set(top.flatMap(r => r.tr.syms))].map(async s => {
+      try {
+        const dd = await binanceGet('/api/v3/depth?symbol=' + s + '&limit=50', x => !!x && Array.isArray(x.bids) && Array.isArray(x.asks));
+        const lv = a => a.map(l => [num(l[0]), num(l[1])]).filter(l => l[0] > 0 && l[1] > 0);
+        depth[s] = { bids: lv(dd.bids), asks: lv(dd.asks) };
+      } catch(e) {}
+    }));
+    for (const r of top) r.deep = triDeep(r.tr, depth, capARS, f);
+    t.res = res; t.at = Date.now(); t.err = null;
+    triAlerts(top);
+  } catch(e) {
+    t.err = 'Binance no respondió';
+    if (!t.tris) t.symsAt = 0;
+  } finally { t.busy = false; }
+  monRender();
+}
+
+const triName = tr => `ARS → ${tr.X} → ${tr.Y} → ARS`;
+
+/* Alarma: resultado con libro real y capital completo, repetido en dos lecturas seguidas */
+function triAlerts(top) {
+  const t = S.mon.tri, thr = thrPct(), now = Date.now(), seen = new Set(), cap = capUSD();
+  let best = null;
+  for (const r of top) {
+    const d = r.deep;
+    if (!d || !d.full || d.pct < thr || d.pct > CFG.MAX_PLAUSIBLE_PCT) continue;
+    const k = r.tr.X + '>' + r.tr.Y;
+    seen.add(k);
+    let st = t.state.get(k);
+    if (!st) { st = { hits:0, lastAt:0, lastPct:-Infinity }; t.state.set(k, st); }
+    st.hits++;
+    if (st.hits < 2) continue;
+    if (now - st.lastAt >= CFG.ALERT_COOLDOWN_MS || d.pct >= st.lastPct + CFG.REALERT_STEP_PCT) {
+      st.lastAt = now; st.lastPct = d.pct;
+      const usdArs = S.fx.usdArs || 1550, gain = d.ars - cap * usdArs;
+      pushAlertLog({
+        tag: 'TRIÁNGULO · Binance', title: `+${d.pct.toFixed(2)}% — ${triName(r.tr)}`,
+        lines: triSteps(r.tr).concat(`Ganancia: ${fmtA(gain)} ARS (capital U$D ${cap}, libro real, comisión ${fmtN(S.cfg.triFee, 3)}% por operación)`),
+        btns: [{ cls:'buy', href: buildLink('binance'), label: '🟢 Abrir Binance' }],
+      });
+      if (!best || d.pct > best.deep.pct) best = r;
+    }
+  }
+  for (const [k, st] of t.state) if (!seen.has(k)) st.hits = 0;
+  if (!best) return;
+  const usdArs = S.fx.usdArs || 1550;
+  raiseOverlay({
+    route: `[TRIÁNGULO] Binance · ${triName(best.tr)}`,
+    pnl: fmtP(best.deep.pct),
+    det: triSteps(best.tr).join('\n') + `\nCapital U$D ${cap} → Ganancia ${fmtA(best.deep.ars - cap * usdArs)} ARS\nCon el libro de órdenes real y ${fmtN(S.cfg.triFee, 3)}% por operación`,
+    buyHref: buildLink('binance'), sellHref: buildLink('binance'),
+    buyLbl: '🟢 ABRIR BINANCE', sellLbl: 'Ver el par ' + best.tr.s1,
+  });
+}
+
+function triSteps(tr) {
+  return [
+    `1. Comprar ${tr.X} con pesos (${tr.s1})`,
+    tr.mkt.sell ? `2. Vender ${tr.X} por ${tr.Y} (${tr.mkt.sym})` : `2. Comprar ${tr.Y} con ${tr.X} (${tr.mkt.sym})`,
+    `3. Vender ${tr.Y} por pesos (${tr.s3})`,
+  ];
+}
+
+function onTriFee(el) {
+  S.cfg.triFee = clampCfg(el.value, USER_CFG.triFee);
+  syncUserConfig();
+  S.mon.tri.tried = 0;
+  monTri();
+}
+
+function triHtml() {
+  const t = S.mon.tri, thr = thrPct();
+  const fees = [[0.1, '0,10% · estándar'], [0.075, '0,075% · pagando con BNB'], [0, '0% · sin comisión']];
+  const sel = `<div class="inrow"><label for="trif">Comisión por operación</label>
+    <select id="trif" onchange="onTriFee(this)">${fees.map(([v, l]) => `<option value="${v}"${Math.abs(S.cfg.triFee - v) < 1e-9 ? ' selected' : ''}>${l}</option>`).join('')}</select></div>`;
+  const intro = `<div class="icard">Tres operaciones dentro de Binance: pesos → una moneda → otra moneda → pesos. No hay retiros ni esperas: el resultado depende solo del libro de órdenes de cada par. Suena la alarma cuando el resultado <strong>con tu capital</strong> llega al umbral en dos lecturas seguidas.</div>`;
+  let body;
+  if (!t.res.length) {
+    body = t.err ? `<div class="em">${esc(t.err)}. Se reintenta en medio minuto.</div>` : '<div class="ld"><div class="spin"></div></div>';
+  } else {
+    body = t.res.slice(0, MON.TRI_SHOW).map(r => {
+      const d = r.deep;
+      const main = d && d.pct != null ? d.pct : r.pct;
+      const cls = d && d.full && main >= thr ? 'pos' : main > 0 ? 'near' : 'neg';
+      const deep = !d ? 'Con tu capital: no medido en esta lectura'
+        : d.full ? `Con tu capital, recorriendo el libro: <b>${fmtP(d.pct)}</b>`
+        : d.cap > 0 ? `El libro alcanza para U$D ${fmtN(d.cap / (S.fx.usdArs || 1550), 0)} de tus ${fmtN(capUSD(), 0)}: con ese monto da <b>${fmtP(d.pct)}</b>. No suena la alarma`
+        : 'El libro de alguno de los tres pares está vacío';
+      return `<div class="oppc ${cls === 'pos' ? 'profit' : cls === 'near' ? 'near' : ''}">
+        <div class="oppt"><div class="oppr"><span class="cname">${esc(triName(r.tr))}</span></div><span class="opppnl ${cls}">${fmtP(main)}</span></div>
+        <div class="oppnet">Con la mejor punta de cada libro: ${fmtP(r.pct)} · ${deep}<br>${triSteps(r.tr).map(esc).join(' · ')}</div>
+      </div>`;
+    }).join('');
+  }
+  const foot = t.at ? `<div class="cfoot">${t.tris.length} triángulos contra pesos · libro leído hace ${fmtAge((Date.now() - t.at) / 1000)}${t.err ? ' · ' + esc(t.err) : ''}. No se consideran los mínimos por orden de cada par.</div>` : '';
+  return intro + `<div class="ccard">${sel}</div><div class="oppl">${body}</div>${foot}`;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TASAS EN CRIPTO (financiamiento de futuros perpetuos)
+══════════════════════════════════════════════════════════════ */
+const FUND_ASSETS = ['BTC', 'ETH', 'SOL'];
+const okBybit = x => !!x && x.retCode === 0 && !!x.result && Array.isArray(x.result.list);
+const okOkx = x => !!x && String(x.code) === '0' && Array.isArray(x.data);
+const FUND_SRC = {
+  binance: {
+    name: 'Binance',
+    cur: async a => {
+      const d = await getJsonAny(`https://fapi.binance.com/fapi/v1/premiumIndex?symbol=${a}USDT`, x => !!x && x.symbol === a + 'USDT');
+      return { rate: +d.lastFundingRate, next: +d.nextFundingTime, mark: +d.markPrice, index: +d.indexPrice };
+    },
+    hist: async a => {
+      const d = await getJsonAny(`https://fapi.binance.com/fapi/v1/fundingRate?symbol=${a}USDT&limit=200`, Array.isArray);
+      return d.map(x => ({ t: +x.fundingTime, r: +x.fundingRate }));
+    },
+  },
+  bybit: {
+    name: 'Bybit',
+    cur: async a => {
+      const d = await getJsonAny(`https://api.bybit.com/v5/market/tickers?category=linear&symbol=${a}USDT`, x => okBybit(x) && x.result.list.length > 0);
+      const t = d.result.list[0];
+      return { rate: +t.fundingRate, next: +t.nextFundingTime, mark: +t.markPrice, index: +t.indexPrice, interval: +t.fundingIntervalHour || null };
+    },
+    hist: async a => {
+      const d = await getJsonAny(`https://api.bybit.com/v5/market/funding/history?category=linear&symbol=${a}USDT&limit=200`, okBybit);
+      return d.result.list.map(x => ({ t: +(x.fundingRateTimestamp || x.fundingTime), r: +x.fundingRate }));
+    },
+  },
+  okx: {
+    name: 'OKX',
+    cur: async a => {
+      const d = await getJsonAny(`https://www.okx.com/api/v5/public/funding-rate?instId=${a}-USDT-SWAP`, x => okOkx(x) && x.data.length > 0);
+      const t = d.data[0];
+      return { rate: +t.fundingRate, next: +t.fundingTime, basis: (t.premium != null && t.premium !== '') ? +t.premium * 100 : null };
+    },
+    hist: async a => {
+      const d = await getJsonAny(`https://www.okx.com/api/v5/public/funding-rate-history?instId=${a}-USDT-SWAP&limit=100`, okOkx);
+      return d.data.map(x => ({ t: +x.fundingTime, r: +((x.realizedRate != null && x.realizedRate !== '') ? x.realizedRate : x.fundingRate) }));
+    },
+  },
+};
+
+async function monFund() {
+  const f = S.mon.fund;
+  if (f.busy) return;
+  f.busy = true; f.tried = Date.now();
+  try {
+    const wantHist = Date.now() - f.histAt > MON.FUND_HIST_MS;
+    const jobs = [];
+    for (const src of Object.keys(FUND_SRC)) for (const a of FUND_ASSETS) {
+      const k = src + ':' + a;
+      jobs.push(FUND_SRC[src].cur(a).then(c => { if (isFinite(c.rate)) f.cur[k] = Object.assign(c, { at: Date.now() }); }).catch(() => {}));
+      if (wantHist || !f.hist[k]) jobs.push(FUND_SRC[src].hist(a).then(h => { f.hist[k] = h.filter(x => isFinite(x.t) && isFinite(x.r)).sort((x, y) => x.t - y.t); }).catch(() => {}));
+    }
+    await Promise.all(jobs);
+    if (wantHist && Object.keys(f.hist).length) f.histAt = Date.now();
+    f.at = Date.now();
+  } finally { f.busy = false; }
+  monRender();
+}
+
+/* Tasa actual y promedio realizado de 30 días, las dos llevadas a un año */
+function fundRow(cur, hist) {
+  const h = hist || [];
+  let interval = cur.interval > 0 ? cur.interval : null;
+  if (!interval && h.length >= 3) {
+    const gaps = [];
+    for (let i = 1; i < h.length; i++) gaps.push(h[i].t - h[i - 1].t);
+    interval = median(gaps) / 3600000;
+  }
+  interval = [1, 2, 4, 8].reduce((best, x) => Math.abs(x - (interval || 8)) < Math.abs(best - (interval || 8)) ? x : best, 8);
+  const from = Date.now() - 30 * 86400000;
+  const win = h.filter(x => x.t >= from);
+  let real = null, days = null;
+  if (win.length >= 2) {
+    days = (win[win.length - 1].t - win[0].t) / 86400000 + interval / 24;
+    real = win.reduce((s, x) => s + x.r, 0) / days * 365 * 100;
+  }
+  const basis = cur.basis != null ? cur.basis : (cur.mark > 0 && cur.index > 0 ? (cur.mark / cur.index - 1) * 100 : null);
+  return { rate: cur.rate, interval, annual: cur.rate * (24 / interval) * 365 * 100, real, days, next: cur.next, basis };
+}
+
+function fundHtml() {
+  const f = S.mon.fund;
+  const intro = `<div class="icard">En los futuros perpetuos, cada pocas horas los que están comprados les pagan una tasa a los que están vendidos (o al revés, si es negativa). Con la moneda comprada en spot y la misma cantidad vendida en el perpetuo, el precio deja de afectarte y cobrás esa tasa.</div>`;
+  if (!f.at) return intro + '<div class="ld"><div class="spin"></div></div>';
+  let best = null, any = false;
+  const cards = FUND_ASSETS.map(a => {
+    const rows = Object.keys(FUND_SRC).map(src => {
+      const cur = f.cur[src + ':' + a];
+      if (!cur || Date.now() - cur.at > 3 * MON.FUND_MS) return `<tr><td class="exnm">${FUND_SRC[src].name}</td><td class="mut" colspan="3">sin datos</td></tr>`;
+      any = true;
+      const r = fundRow(cur, f.hist[src + ':' + a]);
+      if (r.real != null && r.days >= 7 && (!best || r.real > best.r.real)) best = { a, src, r };
+      const next = r.next > Date.now() ? fmtDur((r.next - Date.now()) / 60000) : '—';
+      return `<tr><td><div class="exnm">${FUND_SRC[src].name}</div><div class="exsub">cada ${r.interval} h${r.basis != null ? ' · base ' + pctTxt(r.basis, 3) : ''}</div></td>
+        <td class="num"><b>${pctTxt(r.annual, 1)}</b><div class="exsub">${pctTxt(r.rate * 100, 4)}</div></td>
+        <td class="num">${r.real != null ? `<b>${pctTxt(r.real, 1)}</b><div class="exsub">${fmtN(r.days, 0)} días</div>` : '—'}</td>
+        <td class="num">${next}</td></tr>`;
+    }).join('');
+    return `<div class="sh">${a}</div><div class="ccard"><div class="tscroll"><table class="dtbl">
+      <thead><tr><th>Exchange</th><th>Ahora</th><th>Promedio</th><th>Cobra en</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  }).join('');
+  if (!any) return intro + '<div class="em">Ningún exchange respondió. Se reintenta en unos minutos.</div>';
+  let sum = '';
+  if (best) {
+    const cap = capUSD(), month = cap / 2 * best.r.real / 100 / 12;
+    sum = `<div class="ccard"><div class="ct">Mejor promedio: ${best.a} en ${FUND_SRC[best.src].name}, ${pctTxt(best.r.real, 1)} anual</div>
+      <div class="cs">Con U$D ${fmtN(cap, 0)} —la mitad en spot y la otra mitad como garantía del perpetuo vendido— la tasa se cobra sobre U$D ${fmtN(cap / 2, 0)}: unos <b>${month >= 0 ? '' : '−'}U$D ${fmtN(Math.abs(month), 2)} por mes</b> a ese ritmo, antes de comisiones.</div></div>`;
+  }
+  return intro + sum + cards + `<div class="cfoot">Todas las tasas van llevadas a un año. Ahora: la vigente. Promedio: lo efectivamente pagado en los últimos 30 días, o en los que informe el exchange. La tasa cambia en cada cobro y puede volverse negativa: ahí paga el vendido. Entrar y salir son cuatro operaciones, y el perpetuo vendido se liquida si el precio sube mucho y no reponés garantía. Datos de hace ${fmtAge((Date.now() - f.at) / 1000)}.</div>`;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   AJUSTES: modo de operación, qué entra al cálculo y Mis exchanges
+══════════════════════════════════════════════════════════════ */
+function setMode(mode) {
+  S.cfg.mode = mode === 'both' ? 'both' : 'transfer';
+  S.simNetSig = '';
+  onConfigChange();
+}
+function toggleCfg(key) {
+  S.cfg[key] = !S.cfg[key];
+  S.simSig = '';
+  if (key === 'cross' && S.cfg.cross) fetchHub().then(recalcAll);   // al activarlas no se espera al próximo ciclo
+  onConfigChange();
+}
+function toggleEx(id) {
+  const i = S.cfg.off.indexOf(id);
+  if (i >= 0) S.cfg.off.splice(i, 1); else S.cfg.off.push(id);
+  onConfigChange();
+}
+function allEx(on, p2p) {
+  const ids = EX_IDS.filter(id => EX[id].p2p === p2p);
+  S.cfg.off = S.cfg.off.filter(id => !ids.includes(id)).concat(on ? [] : ids);
+  onConfigChange();
+}
+
+const activeCount = () => EX_IDS.filter(id => venueOn(id) && isActive(id)).length;
+
+/* Resumen de la configuración junto a Capital y Alerta %: toca y abre Ajustes */
+function renderCfgSum() {
+  const c = S.cfg;
+  txt('cfgsum', `${c.mode === 'both' ? 'Dos puntas' : 'Con transferencia'} · ${activeCount()} exchanges · ${c.p2p ? 'con' : 'sin'} P2P${c.cross ? '' : ' · sin cruzadas'}`);
+}
+
+function renderSettings() {
+  renderCfgSum();
+  const c = S.cfg;
+  const opt = (mode, title, desc) => `<button type="button" class="opt${c.mode === mode ? ' on' : ''}" aria-pressed="${c.mode === mode}" onclick="setMode('${mode}')">
+      <span class="optt">${title}</span><span class="optd">${desc}</span></button>`;
+  $('cfg-mode').innerHTML =
+    opt('transfer', 'Con transferencia', 'Comprás, pasás la moneda al otro exchange y vendés. El resultado descuenta el retiro.') +
+    opt('both', 'Dos puntas', 'Ya tenés pesos en un exchange y la moneda en el otro: comprás y vendés a la vez. El retiro pasa a ser el costo de reequilibrar después.');
+
+  const sw = (key, title, desc) => `<button type="button" class="swr" role="switch" aria-checked="${!!c[key]}" onclick="toggleCfg('${key}')">
+      <span class="swt"><span class="optt">${title}</span><span class="optd">${desc}</span></span><span class="swk${c[key] ? ' on' : ''}"></span></button>`;
+  $('cfg-sw').innerHTML =
+    sw('cross', 'Rutas cruzadas entre stablecoins', `Comprar una, convertirla en ${EX[CFG.HUB].name} y vender otra. Pestaña CRUZ.`) +
+    sw('p2p', 'Anuncios P2P', `Precios de anuncios entre personas. Son indicativos: con más de ${CFG.MAX_PLAUSIBLE_P2P_PCT}% de ganancia o de ventaja sobre el mercado se tratan como dato sospechoso.`);
+
+  const chips = p2p => EX_IDS.filter(id => EX[id].p2p === p2p).map(id =>
+    `<button type="button" class="chip${isActive(id) ? ' on' : ''}" aria-pressed="${isActive(id)}" onclick="toggleEx('${id}')">${EX[id].name}</button>`).join('');
+  const bulk = p2p => `<div class="bulk"><button type="button" onclick="allEx(true,${p2p})">Activar todos</button><button type="button" onclick="allEx(false,${p2p})">Quitar todos</button></div>`;
+  const nOn = p2p => EX_IDS.filter(id => EX[id].p2p === p2p && isActive(id)).length;
+  const nAll = p2p => EX_IDS.filter(id => EX[id].p2p === p2p).length;
+  $('cfg-ex').innerHTML =
+    `<div class="chiph">Exchanges · ${nOn(false)} de ${nAll(false)} activos</div><div class="chips">${chips(false)}</div>${bulk(false)}` +
+    (c.p2p ? `<div class="chiph">P2P · ${nOn(true)} de ${nAll(true)} activos</div><div class="chips">${chips(true)}</div>${bulk(true)}` : '');
+
+  const cfg = readUserConfig();
+  const what = `capital U$D ${fmtN(cfg.capital, 0)}, alerta desde ${String(cfg.alertPct).replace('.', ',')}%`;
+  const sync = {
+    ok:      `Trabaja con lo mismo que esta pantalla: ${what}, ${c.mode === 'both' ? 'dos puntas' : 'con transferencia'}, ${activeCount()} exchanges activos${c.p2p ? ', con P2P' : ''}${c.cross ? ', con rutas cruzadas' : ''}. Los cambios rigen desde su próximo ciclo y se conservan al cerrar la app. También graba el historial.`,
+    partial: `Recibe ${what}, pero esta versión de la app no le pasa el modo, P2P ni Mis exchanges: falta actualizar MainActivity.java (interfaz 5.4). Hasta entonces avisa con todos los exchanges y sin P2P.`,
+    old:     'Esta versión de la app no le envía la configuración: falta actualizar MainActivity.java (interfaz 5.4).',
+    err:     'No se le pudo enviar la configuración.',
+    none:    'Solo existe dentro de la app Android. En el navegador la configuración se conserva acá y las alertas suenan con la página abierta.',
+  };
+  txt('botsync', sync[S.botSync] || sync.none);
+  txt('engver', ENGINE_VERSION);
+  renderCosts();
+}
+
+/* Costos en vivo de la moneda elegida */
+function renderCosts() {
+  if (S.activeTab !== 'cfg') return;
+  const coinId = S.activeCoin === XID ? 'usdt' : S.activeCoin, coin = COINS[coinId];
+  txt('info-coin', coin.label);
+  const P = S.prices[coinId] || {};
+  const ids = EX_IDS.filter(id => P[id] && venueOn(id));
+  if (!ids.length) {
+    $('ftb').innerHTML = '<tr><td colspan="3" style="color:var(--muted2)">Esperando datos...</td></tr>';
+    return;
+  }
+  $('ftb').innerHTML = ids.map(id => {
+    const p = P[id];
+    const sp = (p.askARS && p.bidARS) ? ((p.askARS - p.bidARS) / p.askARS * 100).toFixed(2) + '%' : '—';
+    let w = S.fees ? 'sin retiro informado' : '—';
+    const m = feeMap(id, coinId);
+    if (m) {
+      const best = Object.keys(m).map(n => ({ n, f: feeOf(m[n]) })).filter(x => x.f != null).sort((a, b) => a.f - b.f)[0];
+      if (best) w = `${trimNum(best.f)} ${coin.unit} · ${esc(netLabel(best.n))}`;
+    }
+    return `<tr><td class="exnm">${EX[id].name}</td><td>${p.state === 'ok' ? sp : 'vieja'}</td><td style="font-size:10px;color:var(--muted2)">${w}</td></tr>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   STATUS / LOOP
+══════════════════════════════════════════════════════════════ */
+function setStatus(m) {
+  const d = $('ldot');
+  if (m === 'live')   { d.style.background='var(--green)';  d.style.boxShadow='0 0 8px var(--green)';  d.classList.add('on'); }
+  if (m === 'upd')    { d.style.background='var(--yellow)'; d.style.boxShadow='0 0 8px var(--yellow)'; }
+  if (m === 'paused') { d.style.background='var(--muted)';  d.style.boxShadow='none';                  d.classList.remove('on'); txt('cdb','—'); }
+  if (m === 'err')    { d.style.background='var(--red)';    d.style.boxShadow='0 0 8px var(--red)'; }
+}
+
+function renderAll() {
+  renderFX(); renderTabs(); renderKPI(); renderPriceTable(); renderOpps(); renderCfgSum();
+  if (S.activeTab === 'cfg') renderSettings();
+  if (S.activeTab === 'otros' && S.mon.sub === 'brecha') monRender();
+  populateSim();
+}
+
+async function runCycle() {
+  if (S.busy) return;
+  S.busy = true;
+  setStatus('upd');
+  try {
+    const res = await Promise.all([fetchDolar(), fetchFees(), fetchHub(), ...COIN_IDS.map(fetchCoin)]);
+    computeAll();
+    renderAll();
+    checkAlerts();
+    histRecord();
+    setStatus(res.slice(3).some(Boolean) ? 'live' : 'err');
+  } catch(e) {
+    nlog('runCycle: ' + (e && e.stack ? e.stack : e));
+    setStatus('err');
+  } finally {
+    S.busy = false;
+  }
+  try { monTick(); histTick(); } catch(e) { nlog('monitores: ' + (e && e.stack ? e.stack : e)); }
+}
+
+function startTimers() {
+  const sec = CFG.CYCLE_MS / 1000;
+  clearInterval(S.ivId); clearInterval(S.cdId);
+  S.ivId = setInterval(runCycle, CFG.CYCLE_MS);
+  S.cd = sec; txt('cdb', sec + 's');
+  S.cdId = setInterval(() => { S.cd--; if (S.cd <= 0) S.cd = sec; txt('cdb', S.cd + 's'); }, 1000);
+}
+
+function startLoop() {
+  runCycle();
+  startTimers();
+}
+
+function toggleLoop() {
+  const b = $('pbtn');
+  if (S.running) {
+    clearInterval(S.ivId); clearInterval(S.cdId);
+    S.running = false; b.textContent = '▶'; b.classList.add('pause'); setStatus('paused');
+  } else {
+    S.running = true; b.textContent = '⏸'; b.classList.remove('pause'); startLoop();
+  }
+}
+
+async function manualRefresh() {
+  const b = $('rbtn'); b.textContent = '…'; b.disabled = true;
+  await runCycle();
+  if (S.running) startTimers();
+  b.textContent = '↻'; b.disabled = false;
+}
+
+function recalcAll() { computeAll(); renderAll(); }
+
+/* ══════════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════════ */
+for (const coinId of COIN_IDS) S.prices[coinId] = {};
+for (const tab of TABS) { S.opps[tab] = []; S.one[tab] = []; }
+
+loadUserConfig();     // configuración de la sesión anterior
+syncUserConfig();     // …y se la pasa al monitor en segundo plano
+renderSettings();
+populateSim();
+connectWS();
+startLoop();
+</script>
+</body>
+</html>
